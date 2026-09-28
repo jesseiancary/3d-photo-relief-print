@@ -1,0 +1,19 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        # Match the Node version pinned in CI (.nvmrc / .github/workflows/ci.yml).
+        - nvm use
+        - npm ci
+    build:
+      commands:
+        - npm run build
+  artifacts:
+    # Vite's multi-file build output.
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
