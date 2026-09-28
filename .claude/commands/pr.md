@@ -1,105 +1,129 @@
 ---
-description: Generate PR title and description following industry best practices
+description: Verify the change is ready, then generate PR title and description
 ---
 
 # Generate Pull Request Content
 
-Generate a pull request title and description based on the current branch's changes.
+Running this command is the user's signal that they believe the change is ready. Treat it as a **readiness gate**: prove the change is sound _first_, then generate a pull request title and description from the current branch's changes.
+
+Do **not** commit, push, or create the PR. Do **not** warn about the branch — the user handles branching. This command verifies and writes content; it makes no outward changes.
 
 ## Workflow
 
-1. **Analyze git context:**
+### 1. Preflight gates (run before writing anything)
 
-   ```bash
-   git status
-   git diff main...HEAD --stat
-   git log main..HEAD --oneline
-   git diff main...HEAD
-   ```
+Run the full CI matrix locally — the same gates as [verify.md](verify.md) — **without stopping at the first failure** so the user sees everything in one pass. The gate list is **not hardcoded here**: read [.github/workflows/ci.yml](../../.github/workflows/ci.yml) (the single source of truth) and run exactly the check commands it defines, so this stays correct as CI evolves.
 
-2. **Review all changes:**
-   - Read full diff to understand what changed
-   - Identify the primary purpose (feat/fix/refactor/docs/etc.)
-   - Note any breaking changes or important details
-   - Check for related issues/tickets
+```bash
+set +e
+# Substitute the commands extracted from ci.yml. At the time of writing:
+for gate in "npm run lint" "npm run format:check" "npx tsc -b" "npm test" "npm run build" "npm run build:single"; do
+  echo "=== $gate ==="; eval "$gate"; echo "exit=$? :: $gate"
+done
+```
 
-3. **Generate PR title** following Conventional Commits format:
-   - Format: `type(scope): description`
-   - Max 72 characters
-   - Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`
-   - Scopes: `core`, `worker`, `ui`, `mesh`, `tones`, `3mf`, `image`, `deps`
-   - Use imperative mood ("add" not "added")
-   - Examples:
-     - `feat(tones): pick heights by even CIE L* spacing`
-     - `fix(mesh): remove diagonal-only pinches before walls`
-     - `refactor(worker): extract latest-wins preview queue`
+Then, **only if the diff touches** `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](../../src/core/threemf.ts) / [template.ts](../../src/core/template.ts)), launch the `pipeline-reviewer` agent and collect its findings. (Detect with `git diff main...HEAD --name-only`.)
 
-4. **Generate PR description** in markdown with these sections:
+**Gate rule:**
 
-   ```markdown
-   ## Summary
+- If any CI gate fails → **STOP. Do not generate PR content.** Report the failing gate(s) with the key error lines and the offending file/line. If `format:check` is the only failure, note it is auto-fixable with `npm run format` (and normally prevented by the format-on-edit hook).
+- If the reviewer reports confirmed defects → surface them and **ask the user to confirm** before proceeding to content generation.
+- If all gates pass and the review is clean → continue.
 
-   [2-4 sentence overview of what this PR does and why]
+### 2. Analyze git context
 
-   ## Changes
+```bash
+git status
+git diff main...HEAD --stat
+git log main..HEAD --oneline
+git diff main...HEAD
+```
 
-   - [Bulleted list of key changes]
-   - [Use present tense: "Adds X", "Updates Y", "Fixes Z"]
-   - [Group related changes together]
+### 3. Review all changes
 
-   ## Technical Details
+- Read the full diff to understand what changed
+- Identify the primary purpose (feat/fix/refactor/docs/etc.)
+- Note any breaking changes or important details
+- Check for related issues/tickets
 
-   [Optional: Any implementation notes, architectural decisions, or trade-offs]
+### 4. Generate PR title (Conventional Commits)
 
-   ## Breaking Changes
+- Format: `type(scope): description`
+- Max 72 characters
+- Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `ci`, `perf`
+- Scopes: `core`, `worker`, `ui`, `mesh`, `tones`, `3mf`, `image`, `deps`
+- Use imperative mood ("add" not "added")
+- Examples:
+  - `feat(tones): pick heights by even CIE L* spacing`
+  - `fix(mesh): remove diagonal-only pinches before walls`
+  - `refactor(worker): extract latest-wins preview queue`
 
-   [Only if applicable - what breaks and migration path]
+### 5. Generate PR description (markdown)
 
-   ## Testing
+```markdown
+## Summary
 
-   - [ ] Tests added/updated (`npm test`)
-   - [ ] `npm run build` passes (tsc + vite)
-   - [ ] Manual testing completed (exported and opened a 3MF where relevant)
-   - [ ] All tests passing
+[2-4 sentence overview of what this PR does and why]
 
-   ## Related Issues
+## Changes
 
-   [If applicable: Closes #123, Fixes #456]
-   ```
+- [Bulleted list of key changes]
+- [Use present tense: "Adds X", "Updates Y", "Fixes Z"]
+- [Group related changes together]
 
-5. **Output format:**
+## Technical Details
 
-   **CRITICAL: Output raw markdown source code, not rendered markdown.**
+[Optional: implementation notes, architectural decisions, or trade-offs]
 
-   The user needs to copy-paste the markdown source. Format your response like this:
+## Breaking Changes
 
-   ````
-   **PR Title:**
-   chore(scope): description here
+[Only if applicable - what breaks and migration path]
 
-   **PR Description (raw markdown - copy this):**
-   ```markdown
-   ## Summary
+## Testing
 
-   [content here...]
+- [ ] Tests added/updated (`npm test`)
+- [ ] `npm run build` passes (tsc + vite)
+- [ ] Manual testing completed (exported and opened a 3MF where relevant)
+- [ ] All tests passing
 
-   ## Changes
+## Related Issues
 
-   - Item 1
-   - Item 2
+[If applicable: Closes #123, Fixes #456]
+```
 
-   [etc...]
-   ````
+Because the preflight gates just ran, fill the Testing checkboxes from **actual results** — check what passed, and only claim tests were added if the diff shows them.
 
-   ````
+### 6. Output format
 
-   **RULES:**
-   - Put the description inside a markdown code block (```markdown ... ```)
-   - This ensures the user sees the raw markdown source, not rendered HTML
-   - NO warnings about being on main branch
-   - NO instructions for creating feature branches
-   - The user handles branching workflow - just provide the title and description
-   ````
+Lead with a one-line **readiness verdict** reflecting the preflight, then the content.
+
+**CRITICAL: Output raw markdown source, not rendered markdown** — the user copy-pastes it.
+
+````
+Readiness: ✅ all gates passed (lint, format, typecheck, test, build, single) · review clean
+
+**PR Title:**
+type(scope): description here
+
+**PR Description (raw markdown - copy this):**
+```markdown
+## Summary
+
+[content here...]
+
+## Changes
+
+- Item 1
+- Item 2
+
+[etc...]
+````
+
+**RULES:**
+
+- Put the description inside a markdown code block (` ```markdown ... ``` `) so the user sees raw source
+- NO warnings about being on main branch — the user handles the branching workflow
+- Provide only the readiness verdict + title + description
 
 ## Best Practices Applied
 
@@ -117,65 +141,30 @@ Generate a pull request title and description based on the current branch's chan
 - **Summary first** — Busy reviewers should understand the PR in 30 seconds
 - **What and Why** — Not just what changed, but why it matters
 - **Bulleted changes** — Easier to scan than paragraphs
-- **Testing evidence** — Checkboxes show what verification was done
+- **Testing evidence** — Checkboxes reflect the preflight results, not guesses
 - **Linked issues** — Automatic issue closing via GitHub keywords
 
 ### Writing Style
 
-- **Present tense** — "Adds" not "Added" (matches Conventional Commits)
+- **Present tense** — "Adds" not "Added"
 - **Active voice** — "This PR adds" not "X is added by this PR"
 - **Concrete specifics** — "Reduces query time by 40%" not "Improves performance"
 - **Audience-aware** — Assume reviewer knows the codebase but not your thought process
 
-## Example Output
-
-**PR Title:**
-feat(tones): pick layer heights by even CIE L* spacing
-
-**PR Description (raw markdown - copy this):**
-
-```markdown
-## Summary
-
-Improves how the tone model chooses layer heights. Previously heights were spaced linearly, which clustered visually similar tones and wasted contrast. This PR picks the heights whose simulated colours are most evenly spaced in CIE L*, so terraces read as distinct steps.
-
-## Changes
-
-- Simulates colour at every candidate layer height (`src/core/tones.ts`)
-- Selects heights to maximise even spacing in CIE L*
-- Recomputes filament swap layers from the chosen heights
-- Adds a test asserting monotonic L* ordering across tones
-
-## Technical Details
-
-The first filament remains an opaque base; each later filament is a band of layers blending toward its colour (full coverage ≈ TD × 0.1 mm). Height selection now runs a pass over the simulated tone curve rather than assuming linear steps, so the change is confined to `tones.ts` and does not touch the mesh or 3MF stages.
-
-## Testing
-
-- [x] Tests added for L* spacing (`npm test`)
-- [x] `npm run build` passes (tsc + vite)
-- [x] Manual testing: exported a 3MF and confirmed swap layers in the slicer
-- [x] All tests passing
-
-## Related Issues
-
-Closes #42
-
----
-```
-
 ## Notes
 
-- **DO NOT** create the PR or push to GitHub — only generate the content
-- **DO NOT** warn about being on main branch — user handles branching workflow
-- **DO NOT** provide instructions for creating feature branches
+- **DO NOT** create the PR or push to GitHub — only verify and generate content
+- **DO NOT** commit — the user controls commits (and `guard-main` blocks commits on `main`)
+- **DO NOT** warn about being on main or provide branching instructions
+- **DO** run the preflight gates first and refuse to generate content for a red build
 - **DO** analyze the full diff, not just the latest commit message
 - **DO** look for breaking changes and call them out explicitly
 - **DO** verify test coverage in the diff before claiming tests were added
-- **DO** output raw markdown (no code blocks wrapping the description)
+- **DO** output raw markdown (description wrapped in a fenced block)
 
 ## See Also
 
+- [verify.md](verify.md) — the CI gate matrix this command runs as preflight
+- `.claude/agents/pipeline-reviewer.md` — domain review for core/3MF changes
 - `.claude/rules/git.md` — Conventional commit format
-- `.claude/commands/review.md` — Pre-PR code review checklist
-- `CLAUDE.md` — Git workflow and PR merge process
+- [CLAUDE.md](../../CLAUDE.md) — Git workflow and automated-review policy

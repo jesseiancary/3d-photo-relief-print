@@ -46,6 +46,10 @@ Two modes, both in [threemf.ts](src/core/threemf.ts):
 
 Read [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) before touching 3MF output — it documents the slicer's config-loading rules that constrain what this code can do.
 
+## Automated review
+
+After completing a batch of changes to `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](src/core/threemf.ts) / [template.ts](src/core/template.ts)), and **before reporting the work done**, proactively launch the `pipeline-reviewer` agent (`.claude/agents/pipeline-reviewer.md`) and fold its findings into the change. Trigger it once the change is coherent — at task completion, not after every edit — since these areas fail silently (non-manifold mesh, dropped Bambu config, uneven CIE L\* tones). No need to wait for an explicit request.
+
 ## Notes
 
 - Filament profiles live in localStorage (JSON import/export). No cropping or saved projects yet.
