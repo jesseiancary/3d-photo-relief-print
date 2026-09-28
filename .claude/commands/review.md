@@ -64,4 +64,5 @@ This is a browser-only tool (no backend, no auth, no network). The checklist ref
 ### Documentation
 
 - [ ] `CLAUDE.md` / `README.md` updated if architecture or commands changed
+- [ ] `.claude/` tooling still accurate — commands, file paths, and invariants in the commands/agents/skills/rules match the current code (e.g. renamed modules, changed npm scripts, or new CI gates are reflected)
 - [ ] Breaking changes noted
