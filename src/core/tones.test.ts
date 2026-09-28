@@ -16,7 +16,11 @@ describe('tone plan', () => {
     expect(autoLayers(3, s.print)).toBe(4) // 0.30 mm
     expect(autoLayers(5, s.print)).toBe(7) // 0.50 mm -> 0.56
     const p = planTones(fil([0, 2, 3]), s.print, { mode: 'photo', count: 8 })
-    expect(p.bands.map((b) => [b.firstLayer, b.lastLayer])).toEqual([[1, 6], [7, 10], [11, 17]])
+    expect(p.bands.map((b) => [b.firstLayer, b.lastLayer])).toEqual([
+      [1, 6],
+      [7, 10],
+      [11, 17],
+    ])
   })
 
   it('picks distinct tones spread dark to light', () => {
@@ -25,7 +29,10 @@ describe('tone plan', () => {
     expect(new Set(p.tones.map((t) => t.z)).size).toBe(8)
     for (let i = 1; i < p.tones.length; i++) expect(p.tones[i].L).toBeGreaterThan(p.tones[i - 1].L)
     expect(p.tones[0].z).toBe(0.56)
-    expect(p.swaps.map((w) => [w.layer, w.z, w.filament])).toEqual([[7, 0.64, 1], [11, 0.96, 2]])
+    expect(p.swaps.map((w) => [w.layer, w.z, w.filament])).toEqual([
+      [7, 0.64, 1],
+      [11, 0.96, 2],
+    ])
   })
 
   it('graphic mode gives one fully built tone per filament', () => {
@@ -34,7 +41,8 @@ describe('tone plan', () => {
   })
 
   it('clamps the tone count to available heights and warns', () => {
-    const f = fil([0, 3]); f[1].layers = 3
+    const f = fil([0, 3])
+    f[1].layers = 3
     const p = planTones(f, s.print, { mode: 'photo', count: 10 })
     expect(p.tones).toHaveLength(4)
     expect(p.warnings.some((w) => w.includes('Only 4'))).toBe(true)

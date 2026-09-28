@@ -3,7 +3,9 @@ import { adjust, gridFor, median, type Gray } from './image'
 
 function rand(w: number, h: number, seed = 1): Gray {
   let s = seed
-  const data = new Uint8Array(w * h).map(() => ((s = (s * 1103515245 + 12345) & 0x7fffffff) >> 8) & 255)
+  const data = new Uint8Array(w * h).map(
+    () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) >> 8) & 255,
+  )
   return { w, h, data }
 }
 function bruteMedian(g: Gray, r: number): Uint8Array {
@@ -13,7 +15,8 @@ function bruteMedian(g: Gray, r: number): Uint8Array {
       const v: number[] = []
       for (let dy = -r; dy <= r; dy++)
         for (let dx = -r; dx <= r; dx++) {
-          const yy = Math.min(g.h - 1, Math.max(0, y + dy)), xx = Math.min(g.w - 1, Math.max(0, x + dx))
+          const yy = Math.min(g.h - 1, Math.max(0, y + dy)),
+            xx = Math.min(g.w - 1, Math.max(0, x + dx))
           v.push(g.data[yy * g.w + xx])
         }
       v.sort((a, b) => a - b)

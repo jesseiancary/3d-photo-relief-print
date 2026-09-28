@@ -19,7 +19,8 @@ value — including our old `Photo Relief` — leaves the version unset and sets
 which skips **everything** under `Metadata/`.
 
 Symptom by version:
-- **~02.08.02:** popup *"The 3mf file has invalid config, load geometry data only."*
+
+- **~02.08.02:** popup _"The 3mf file has invalid config, load geometry data only."_
 - **02.08.03+:** loads quietly as geometry only (no popup), swaps just missing.
 
 Consequence: the MVP's embedded swaps never reached the slicer at all. `swap-instructions.txt` was the

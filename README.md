@@ -9,10 +9,11 @@ photo → grey → median blur (mm at print size) → levels (black point, white
 - **Tone model** (`src/core/tones.ts`): the first filament is an opaque base. Each later filament is a band of layers, and each layer blends toward that filament's colour, reaching full coverage at about TD × 0.1 mm. The app simulates the colour at every layer height, picks the heights whose tones are most evenly spaced in CIE L*, and derives the swap layers from them. Graphic mode prints one fully opaque tone per filament.
 - **Mesh** (`src/core/mesh.ts`): one watertight solid built straight from the tone grid, with flat terraces and vertical walls. It has no T-junctions, and every edge is shared by exactly two triangles. Diagonal-only contacts are removed first.
 - **3MF** (`src/core/threemf.ts`, `src/core/template.ts`): two modes.
-  - **Bambu project** (default): the mesh as a referenced object plus a real project the user saved from their slicer (a *slicer template*, `src/core/defaultTemplate.json` or one imported in the app). The template's `project_settings.config` is reused verbatim except the first N filament slots are recoloured to the stack and `layer_height`/`initial_layer_print_height` are set to ours; the template's `Application` tag is copied onto the model. Bambu Studio **drops all config — swaps included — unless that tag reads `BambuStudio-<version>`** (`_handle_end_metadata` in `bbs_3mf.cpp`), which is why we can't synthesise the config and must reuse a real project. Also writes `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml` (the swaps). `[Content_Types].xml` must **not** declare the JSON `project_settings.config` as `application/xml`, or the loader XML-parses JSON and drops config.
+  - **Bambu project** (default): the mesh as a referenced object plus a real project the user saved from their slicer (a _slicer template_, `src/core/defaultTemplate.json` or one imported in the app). The template's `project_settings.config` is reused verbatim except the first N filament slots are recoloured to the stack and `layer_height`/`initial_layer_print_height` are set to ours; the template's `Application` tag is copied onto the model. Bambu Studio **drops all config — swaps included — unless that tag reads `BambuStudio-<version>`** (`_handle_end_metadata` in `bbs_3mf.cpp`), which is why we can't synthesise the config and must reuse a real project. Also writes `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml` (the swaps). `[Content_Types].xml` must **not** declare the JSON `project_settings.config` as `application/xml`, or the loader XML-parses JSON and drops config.
   - **Plain geometry**: a bare core-spec 3MF for other slicers, with `swap-instructions.txt`.
 
   See [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) for the full story on the slicer's config-loading rules.
+
 - **Step wedge**: one row per filament band, one 8 mm patch per layer, so you can check TD values against a real print.
 
 Processing runs in a Web Worker (`src/worker`) and falls back to the main thread if workers are blocked.
@@ -23,6 +24,9 @@ Processing runs in a Web Worker (`src/worker`) and falls back to the main thread
 npm install
 npm run dev             # local dev server
 npm test                # unit tests (tone model, median, mesh manifold checks, end-to-end 3MF)
+npm run lint            # oxlint
+npm run format          # format everything with Prettier
+npm run format:check    # check formatting without writing (CI-friendly)
 npm run build           # static multi-file build → dist/
 npm run build:single    # one self-contained HTML → dist-single/index.html
 npm run build:artifact  # body-only page for publishing as a claude.ai artifact

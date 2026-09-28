@@ -55,7 +55,19 @@ export function createHandler(post: Post) {
         const sim = simulatedRGBA(p.tones, p.plan)
         const adj = grayRGBA(p.adjusted)
         post(
-          { kind: 'preview', reqId, cols: g.cols, rows: g.rows, widthMm: full.widthMm, heightMm, sim, adj, plan: p.plan, counts: p.counts, hist },
+          {
+            kind: 'preview',
+            reqId,
+            cols: g.cols,
+            rows: g.rows,
+            widthMm: full.widthMm,
+            heightMm,
+            sim,
+            adj,
+            plan: p.plan,
+            counts: p.counts,
+            hist,
+          },
           [sim.buffer, adj.buffer],
         )
         return
@@ -69,17 +81,56 @@ export function createHandler(post: Post) {
         post({ kind: 'progress', reqId, stage: 'Building mesh', frac: 0.25 })
         const { mesh, pinches } = buildMesh(p.tones, g.cols, g.rows, p.plan, g.mmPerPx)
         const sizeMm: [number, number] = [g.widthMm, g.heightMm]
-        const bytes = write3mf({ mesh, title: req.title, plan: p.plan, filaments: s.filaments, print: s.print, template: req.template, sizeMm }, (f) =>
-          post({ kind: 'progress', reqId, stage: 'Writing 3MF', frac: 0.4 + 0.6 * f }),
+        const bytes = write3mf(
+          {
+            mesh,
+            title: req.title,
+            plan: p.plan,
+            filaments: s.filaments,
+            print: s.print,
+            template: req.template,
+            sizeMm,
+          },
+          (f) => post({ kind: 'progress', reqId, stage: 'Writing 3MF', frac: 0.4 + 0.6 * f }),
         )
-        post({ kind: 'exported', reqId, bytes, triangles: mesh.triangles.length / 3, pinches, sizeMm, plan: p.plan }, [bytes.buffer])
+        post(
+          {
+            kind: 'exported',
+            reqId,
+            bytes,
+            triangles: mesh.triangles.length / 3,
+            pinches,
+            sizeMm,
+            plan: p.plan,
+          },
+          [bytes.buffer],
+        )
         return
       }
 
       if (req.kind === 'wedge') {
         const w = stepWedge(s)
-        const bytes = write3mf({ mesh: w.mesh, title: req.title, plan: w.plan, filaments: s.filaments, print: s.print, template: req.template, sizeMm: w.sizeMm })
-        post({ kind: 'exported', reqId, bytes, triangles: w.mesh.triangles.length / 3, pinches: 0, sizeMm: w.sizeMm, plan: w.plan }, [bytes.buffer])
+        const bytes = write3mf({
+          mesh: w.mesh,
+          title: req.title,
+          plan: w.plan,
+          filaments: s.filaments,
+          print: s.print,
+          template: req.template,
+          sizeMm: w.sizeMm,
+        })
+        post(
+          {
+            kind: 'exported',
+            reqId,
+            bytes,
+            triangles: w.mesh.triangles.length / 3,
+            pinches: 0,
+            sizeMm: w.sizeMm,
+            plan: w.plan,
+          },
+          [bytes.buffer],
+        )
       }
     } catch (e) {
       post({ kind: 'error', reqId, message: e instanceof Error ? e.message : String(e) })

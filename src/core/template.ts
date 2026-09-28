@@ -45,10 +45,18 @@ export function parseTemplate(bytes: Uint8Array): SlicerTemplate {
     throw new Error("That file isn't a valid 3MF.")
   }
   const cfgRaw = files['Metadata/project_settings.config']
-  if (!cfgRaw) throw new Error('No project settings in that 3MF. Save it as a project from Bambu Studio / OrcaSlicer (File → Save Project), not as an STL/geometry export.')
+  if (!cfgRaw)
+    throw new Error(
+      'No project settings in that 3MF. Save it as a project from Bambu Studio / OrcaSlicer (File → Save Project), not as an STL/geometry export.',
+    )
   const model = files['3D/3dmodel.model']
-  const application = model ? strFromU8(model).match(/name="Application">([^<]+)</)?.[1] ?? '' : ''
-  if (!application.includes('-')) throw new Error(`That project's Application tag is "${application || 'missing'}". It must name a version, like "BambuStudio-02.08.02.61", or the slicer ignores the settings.`)
+  const application = model
+    ? (strFromU8(model).match(/name="Application">([^<]+)</)?.[1] ?? '')
+    : ''
+  if (!application.includes('-'))
+    throw new Error(
+      `That project's Application tag is "${application || 'missing'}". It must name a version, like "BambuStudio-02.08.02.61", or the slicer ignores the settings.`,
+    )
   let config: Record<string, unknown>
   try {
     config = JSON.parse(strFromU8(cfgRaw))
@@ -63,16 +71,23 @@ export function parseTemplate(bytes: Uint8Array): SlicerTemplate {
  * recoloured to the stack and the layer height forced to ours (so the swap heights land on layer
  * boundaries). Slots beyond the stack are left as the template had them (unused by the print).
  */
-export function projectConfigFor(t: SlicerTemplate, filaments: Filament[], p: PrintSettings): { text: string; warning?: string } {
+export function projectConfigFor(
+  t: SlicerTemplate,
+  filaments: Filament[],
+  p: PrintSettings,
+): { text: string; warning?: string } {
   const c: Record<string, unknown> = { ...t.config }
   const slots = Array.isArray(c.filament_colour) ? (c.filament_colour as string[]).length : 0
   const colour = Array.isArray(c.filament_colour) ? [...(c.filament_colour as string[])] : []
-  filaments.forEach((f, i) => { if (i < colour.length) colour[i] = f.color.toUpperCase() })
+  filaments.forEach((f, i) => {
+    if (i < colour.length) colour[i] = f.color.toUpperCase()
+  })
   c.filament_colour = colour
   c.layer_height = String(p.layerMm)
   c.initial_layer_print_height = String(p.firstLayerMm)
-  const warning = filaments.length > slots
-    ? `The stack has ${filaments.length} filaments but the template has ${slots} slots. Save a template with at least ${filaments.length} filaments and import it, or the extra colours won't be set.`
-    : undefined
+  const warning =
+    filaments.length > slots
+      ? `The stack has ${filaments.length} filaments but the template has ${slots} slots. Save a template with at least ${filaments.length} filaments and import it, or the extra colours won't be set.`
+      : undefined
   return { text: JSON.stringify(c), warning }
 }

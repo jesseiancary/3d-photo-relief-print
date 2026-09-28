@@ -1,0 +1,15 @@
+# Build output
+dist/
+dist-single/
+build/
+coverage/
+
+# Dependencies & lockfile
+node_modules/
+package-lock.json
+
+# Generated / verbatim slicer project (kept byte-for-byte)
+src/core/defaultTemplate.json
+
+# TS build info
+*.tsbuildinfo

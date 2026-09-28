@@ -3,7 +3,9 @@ import { checkManifold, fixPinches, terraceMesh } from './mesh'
 
 function randGrid(cols: number, rows: number, levels: number, seed: number) {
   let s = seed
-  const H = new Uint8Array(cols * rows).map(() => 1 + (((s = (s * 1103515245 + 12345) & 0x7fffffff) >> 8) % levels))
+  const H = new Uint8Array(cols * rows).map(
+    () => 1 + (((s = (s * 1103515245 + 12345) & 0x7fffffff) >> 8) % levels),
+  )
   return H
 }
 const zsFor = (n: number) => [0, ...Array.from({ length: n }, (_, i) => 0.56 + 0.08 * i)]
@@ -29,7 +31,12 @@ describe('terrace mesh', () => {
     expect(checkManifold(terraceMesh(H, 2, 2, zsFor(2), 1)).ok).toBe(true)
   })
 
-  for (const [cols, rows, levels, seed] of [[7, 5, 2, 1], [16, 11, 4, 2], [40, 33, 10, 3], [3, 60, 6, 4]] as const) {
+  for (const [cols, rows, levels, seed] of [
+    [7, 5, 2, 1],
+    [16, 11, 4, 2],
+    [40, 33, 10, 3],
+    [3, 60, 6, 4],
+  ] as const) {
     it(`random ${cols}x${rows} with ${levels} levels is watertight with the right volume`, () => {
       const H = randGrid(cols, rows, levels, seed)
       fixPinches(H, cols, rows)

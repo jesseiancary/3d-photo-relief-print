@@ -21,16 +21,22 @@ export function fixPinches(H: Uint8Array, cols: number, rows: number): number {
   for (let pass = 0; pass < 50; pass++) {
     let c = 0
     for (let y = 0; y < rows - 1; y++) {
-      const o = y * cols, p = o + cols
+      const o = y * cols,
+        p = o + cols
       for (let x = 0; x < cols - 1; x++) {
-        const a = H[o + x], b = H[o + x + 1], cc = H[p + x], d = H[p + x + 1]
+        const a = H[o + x],
+          b = H[o + x + 1],
+          cc = H[p + x],
+          d = H[p + x + 1]
         if (Math.min(a, d) > Math.max(b, cc)) {
           const t = Math.min(a, d)
-          if (b >= cc) H[o + x + 1] = t; else H[p + x] = t
+          if (b >= cc) H[o + x + 1] = t
+          else H[p + x] = t
           c++
         } else if (Math.min(b, cc) > Math.max(a, d)) {
           const t = Math.min(b, cc)
-          if (a >= d) H[o + x] = t; else H[p + x + 1] = t
+          if (a >= d) H[o + x] = t
+          else H[p + x + 1] = t
           c++
         }
       }
@@ -45,14 +51,23 @@ class Grow<T extends Float32Array | Uint32Array> {
   n = 0
   arr: T
   private make: (n: number) => T
-  constructor(make: (n: number) => T, cap: number) { this.make = make; this.arr = make(cap) }
+  constructor(make: (n: number) => T, cap: number) {
+    this.make = make
+    this.arr = make(cap)
+  }
   push3(a: number, b: number, c: number) {
     if (this.n + 3 > this.arr.length) {
-      const next = this.make(this.arr.length * 2); next.set(this.arr); this.arr = next
+      const next = this.make(this.arr.length * 2)
+      next.set(this.arr)
+      this.arr = next
     }
-    this.arr[this.n++] = a; this.arr[this.n++] = b; this.arr[this.n++] = c
+    this.arr[this.n++] = a
+    this.arr[this.n++] = b
+    this.arr[this.n++] = c
   }
-  done(): T { return this.arr.slice(0, this.n) as T }
+  done(): T {
+    return this.arr.slice(0, this.n) as T
+  }
 }
 
 /**
@@ -60,7 +75,13 @@ class Grow<T extends Float32Array | Uint32Array> {
  * @param zs z in mm for each height index; zs[0] must be 0 (the bed)
  * @param pitch cell size in mm
  */
-export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: number[], pitch: number): Mesh {
+export function terraceMesh(
+  H: Uint8Array,
+  cols: number,
+  rows: number,
+  zs: number[],
+  pitch: number,
+): Mesh {
   if (zs.length > 16) throw new Error('at most 15 heights')
   const pos = new Grow((n) => new Float32Array(n), 1 << 20)
   const tri = new Grow((n) => new Uint32Array(n), 1 << 21)
@@ -77,7 +98,8 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
     }
     return id
   }
-  const cell = (x: number, y: number) => (x < 0 || y < 0 || x >= cols || y >= rows ? 0 : H[y * cols + x])
+  const cell = (x: number, y: number) =>
+    x < 0 || y < 0 || x >= cols || y >= rows ? 0 : H[y * cols + x]
 
   // heights present at a grid corner, restricted to [lo, hi], ascending
   const scratch: number[] = []
@@ -90,26 +112,35 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
 
   /** wall between corners P and Q from height lo to hi; its outward normal is to the right of P→Q (seen from above) */
   const wall = (px: number, py: number, qx: number, qy: number, lo: number, hi: number) => {
-    const P = cornerHeights(px, py, lo, hi), Q = cornerHeights(qx, qy, lo, hi)
-    let i = 0, j = 0
+    const P = cornerHeights(px, py, lo, hi),
+      Q = cornerHeights(qx, qy, lo, hi)
+    let i = 0,
+      j = 0
     while (i < P.length - 1 || j < Q.length - 1) {
       const advQ = i === P.length - 1 || (j < Q.length - 1 && Q[j + 1] <= P[i + 1])
-      if (advQ) { tri.push3(vert(px, py, P[i]), vert(qx, qy, Q[j]), vert(qx, qy, Q[j + 1])); j++ }
-      else { tri.push3(vert(px, py, P[i]), vert(qx, qy, Q[j]), vert(px, py, P[i + 1])); i++ }
+      if (advQ) {
+        tri.push3(vert(px, py, P[i]), vert(qx, qy, Q[j]), vert(qx, qy, Q[j + 1]))
+        j++
+      } else {
+        tri.push3(vert(px, py, P[i]), vert(qx, qy, Q[j]), vert(px, py, P[i + 1]))
+        i++
+      }
     }
   }
 
   // run endpoints per row: x positions where the height changes, plus 0 and cols
   const E: Int32Array[] = []
   for (let y = 0; y < rows; y++) {
-    const xs = [0], o = y * cols
+    const xs = [0],
+      o = y * cols
     for (let x = 1; x < cols; x++) if (H[o + x] !== H[o + x - 1]) xs.push(x)
     xs.push(cols)
     E.push(Int32Array.from(xs))
   }
   const merge = (a: Int32Array, b: Int32Array) => {
     const out: number[] = []
-    let i = 0, j = 0
+    let i = 0,
+      j = 0
     while (i < a.length || j < b.length) {
       const v = j >= b.length || (i < a.length && a[i] <= b[j]) ? a[i++] : b[j++]
       if (out[out.length - 1] !== v) out.push(v)
@@ -118,11 +149,14 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
   }
   // S[y] = vertex x positions along grid line y
   const S: Int32Array[] = []
-  for (let y = 0; y <= rows; y++) S.push(y === 0 ? E[0] : y === rows ? E[rows - 1] : merge(E[y - 1], E[y]))
+  for (let y = 0; y <= rows; y++)
+    S.push(y === 0 ? E[0] : y === rows ? E[rows - 1] : merge(E[y - 1], E[y]))
 
   const slice = (s: Int32Array, x0: number, x1: number) => {
-    let a = 0; while (s[a] < x0) a++
-    let b = a; while (s[b] < x1) b++
+    let a = 0
+    while (s[a] < x0) a++
+    let b = a
+    while (s[b] < x1) b++
     return s.subarray(a, b + 1)
   }
 
@@ -130,14 +164,22 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
   for (let y = 0; y < rows; y++) {
     const e = E[y]
     for (let k = 0; k < e.length - 1; k++) {
-      const x0 = e[k], x1 = e[k + 1], h = H[y * cols + x0]
+      const x0 = e[k],
+        x1 = e[k + 1],
+        h = H[y * cols + x0]
       const A = slice(S[y], x0, x1) // upper edge (grid y)
       const B = slice(S[y + 1], x0, x1) // lower edge (grid y+1)
-      let i = 0, j = 0
+      let i = 0,
+        j = 0
       while (i < B.length - 1 || j < A.length - 1) {
         const advB = j === A.length - 1 || (i < B.length - 1 && B[i + 1] <= A[j + 1])
-        if (advB) { tri.push3(vert(B[i], y + 1, h), vert(B[i + 1], y + 1, h), vert(A[j], y, h)); i++ }
-        else { tri.push3(vert(B[i], y + 1, h), vert(A[j + 1], y, h), vert(A[j], y, h)); j++ }
+        if (advB) {
+          tri.push3(vert(B[i], y + 1, h), vert(B[i + 1], y + 1, h), vert(A[j], y, h))
+          i++
+        } else {
+          tri.push3(vert(B[i], y + 1, h), vert(A[j + 1], y, h), vert(A[j], y, h))
+          j++
+        }
       }
     }
   }
@@ -146,8 +188,10 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
   for (let y = 0; y <= rows; y++) {
     const s = S[y]
     for (let k = 0; k < s.length - 1; k++) {
-      const x0 = s[k], x1 = s[k + 1]
-      const up = cell(x0, y - 1), dn = cell(x0, y)
+      const x0 = s[k],
+        x1 = s[k + 1]
+      const up = cell(x0, y - 1),
+        dn = cell(x0, y)
       if (up > dn) wall(x0, y, x1, y, dn, up)
       else if (dn > up) wall(x1, y, x0, y, up, dn)
     }
@@ -158,7 +202,8 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
     const e = E[y]
     for (let k = 0; k < e.length; k++) {
       const x = e[k]
-      const l = cell(x - 1, y), r = cell(x, y)
+      const l = cell(x - 1, y),
+        r = cell(x, y)
       if (l > r) wall(x, y + 1, x, y, r, l)
       else if (r > l) wall(x, y, x, y + 1, l, r)
     }
@@ -180,7 +225,8 @@ export function terraceMesh(H: Uint8Array, cols: number, rows: number, zs: numbe
 
 /** Check that every directed edge appears once and its reverse once (closed, oriented 2-manifold). */
 export function checkManifold(m: Mesh): { ok: boolean; bad: number; volume: number } {
-  const t = m.triangles, p = m.positions
+  const t = m.triangles,
+    p = m.positions
   const edges = new Map<string, number>()
   let vol = 0
   for (let i = 0; i < t.length; i += 3) {
@@ -190,7 +236,11 @@ export function checkManifold(m: Mesh): { ok: boolean; bad: number; volume: numb
       edges.set(key, (edges.get(key) ?? 0) + 1)
     }
     const [a, b, c] = v.map((j) => [p[3 * j], p[3 * j + 1], p[3 * j + 2]])
-    vol += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6
+    vol +=
+      (a[0] * (b[1] * c[2] - b[2] * c[1]) -
+        a[1] * (b[0] * c[2] - b[2] * c[0]) +
+        a[2] * (b[0] * c[1] - b[1] * c[0])) /
+      6
   }
   let bad = 0
   for (const [k, n] of edges) {

@@ -34,17 +34,35 @@ export function median(src: Gray, r: number): Gray {
     for (let k = -r; k <= r; k++) rowOff[k + r] = (y + k < 0 ? 0 : y + k >= h ? h - 1 : y + k) * w
     hist.fill(0)
     for (const o of rowOff) for (let dx = -r; dx <= r; dx++) hist[data[o + cx(dx)]]++
-    let med = 0, lt = 0
-    while (lt + hist[med] <= half) { lt += hist[med]; med++ }
+    let med = 0,
+      lt = 0
+    while (lt + hist[med] <= half) {
+      lt += hist[med]
+      med++
+    }
     out[y * w] = med
     for (let x = 1; x < w; x++) {
-      const xo = cx(x - r - 1), xi = cx(x + r)
+      const xo = cx(x - r - 1),
+        xi = cx(x + r)
       for (const o of rowOff) {
-        const v = data[o + xo]; hist[v]--; if (v < med) lt--
-        const u = data[o + xi]; hist[u]++; if (u < med) lt++
+        const v = data[o + xo]
+        hist[v]--
+        if (v < med) lt--
+        const u = data[o + xi]
+        hist[u]++
+        if (u < med) lt++
       }
-      if (lt > half) { do { med--; lt -= hist[med] } while (lt > half) }
-      else { while (lt + hist[med] <= half) { lt += hist[med]; med++ } }
+      if (lt > half) {
+        do {
+          med--
+          lt -= hist[med]
+        } while (lt > half)
+      } else {
+        while (lt + hist[med] <= half) {
+          lt += hist[med]
+          med++
+        }
+      }
       out[y * w + x] = med
     }
   }
@@ -54,7 +72,8 @@ export function median(src: Gray, r: number): Gray {
 /** separable box blur via running sums, edges clamped; returns floats */
 function boxBlur(src: Gray, r: number): Float32Array {
   const { w, h, data } = src
-  const tmp = new Float32Array(w * h), out = new Float32Array(w * h)
+  const tmp = new Float32Array(w * h),
+    out = new Float32Array(w * h)
   const n = 2 * r + 1
   for (let y = 0; y < h; y++) {
     const o = y * w
@@ -79,10 +98,12 @@ function boxBlur(src: Gray, r: number): Float32Array {
 /** blur → levels → sharpen, sized for a grid where one pixel is `mmPerPx` millimetres */
 export function adjust(src: Gray, a: AdjustSettings, mmPerPx: number): Gray {
   let g = median(src, Math.round(a.blurMm / mmPerPx))
-  const bp = Math.min(a.blackPoint, a.whitePoint - 1), wp = Math.max(a.whitePoint, bp + 1)
+  const bp = Math.min(a.blackPoint, a.whitePoint - 1),
+    wp = Math.max(a.whitePoint, bp + 1)
   const inv = 1 / Math.max(0.05, a.gamma)
   const lut = new Uint8Array(256)
-  for (let v = 0; v < 256; v++) lut[v] = Math.round(255 * Math.min(1, Math.max(0, (v - bp) / (wp - bp))) ** inv)
+  for (let v = 0; v < 256; v++)
+    lut[v] = Math.round(255 * Math.min(1, Math.max(0, (v - bp) / (wp - bp))) ** inv)
   const lv = new Uint8Array(g.data.length)
   for (let i = 0; i < lv.length; i++) lv[i] = lut[g.data[i]]
   g = { w: g.w, h: g.h, data: lv }
@@ -113,7 +134,13 @@ export interface GridSize {
   mmPerPx: number
 }
 
-export function gridFor(imgW: number, imgH: number, heightMm: number, pitchMm: number, maxRows = Infinity): GridSize {
+export function gridFor(
+  imgW: number,
+  imgH: number,
+  heightMm: number,
+  pitchMm: number,
+  maxRows = Infinity,
+): GridSize {
   const rows = Math.max(8, Math.min(maxRows, Math.round(heightMm / pitchMm)))
   const cols = Math.max(8, Math.round((rows * imgW) / imgH))
   const mmPerPx = heightMm / rows

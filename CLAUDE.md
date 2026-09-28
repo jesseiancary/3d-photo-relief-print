@@ -14,6 +14,8 @@ npm run dev             # local dev server
 npm test                # vitest run (tone model, median blur, mesh manifold checks, end-to-end 3MF)
 npx vitest run src/core/mesh.test.ts   # a single test file
 npm run lint            # oxlint
+npm run format          # format everything with Prettier
+npm run format:check    # verify formatting (no writes)
 npm run build           # static multi-file build → dist/
 npm run build:single    # one self-contained HTML (worker inlined) → dist-single/index.html
 npm run build:artifact  # body-only page for publishing as a claude.ai artifact
@@ -25,6 +27,7 @@ npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a
 The pipeline is: **photo → grey → median blur → levels (black/white point, gamma) → sharpen → snap each pixel to the nearest printable tone → terraced mesh → 3MF.** The `src/core/` modules are pure and framework-free; `src/worker/` runs them off the main thread; `src/ui/` + `src/App.tsx` is the React layer.
 
 **Core (`src/core/`)** — the whole engine, all pure functions over typed arrays:
+
 - [pipeline.ts](src/core/pipeline.ts) — orchestrates the stages: `process()` (grey → tone indices), `buildMesh()`, `stepWedge()`. The entry point that ties the others together.
 - [tones.ts](src/core/tones.ts) — the tone model. First filament is an opaque base; each later filament is a band of layers blending toward its colour (full coverage ≈ TD × 0.1 mm). It simulates colour at every layer height, picks heights whose tones are most evenly spaced in CIE L*, and derives swap layers. Graphic mode = one opaque tone per filament.
 - [mesh.ts](src/core/mesh.ts) — builds one watertight solid from the tone grid: flat terraces, vertical walls, no T-junctions, every edge shared by exactly two triangles. `fixPinches()` removes diagonal-only contacts first.
@@ -38,7 +41,7 @@ The pipeline is: **photo → grey → median blur → levels (black/white point,
 
 Two modes, both in [threemf.ts](src/core/threemf.ts):
 
-- **Bambu project (default)**: the mesh plus a real project the user saved from their slicer (a *slicer template*, [defaultTemplate.json](src/core/defaultTemplate.json) or one imported in-app). The template's `project_settings.config` is reused **verbatim** except the first N filament slots are recoloured and layer heights set to ours. **Bambu Studio drops all config — colour swaps included — unless the model's `Application` tag reads `BambuStudio-<version>`**, so we can't synthesise config and must reuse a real project. Also: `[Content_Types].xml` must **not** declare the JSON `project_settings.config` as `application/xml`, or the loader XML-parses JSON and silently drops config.
+- **Bambu project (default)**: the mesh plus a real project the user saved from their slicer (a _slicer template_, [defaultTemplate.json](src/core/defaultTemplate.json) or one imported in-app). The template's `project_settings.config` is reused **verbatim** except the first N filament slots are recoloured and layer heights set to ours. **Bambu Studio drops all config — colour swaps included — unless the model's `Application` tag reads `BambuStudio-<version>`**, so we can't synthesise config and must reuse a real project. Also: `[Content_Types].xml` must **not** declare the JSON `project_settings.config` as `application/xml`, or the loader XML-parses JSON and silently drops config.
 - **Plain geometry**: bare core-spec 3MF for other slicers, plus `swap-instructions.txt`.
 
 Read [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) before touching 3MF output — it documents the slicer's config-loading rules that constrain what this code can do.
@@ -48,3 +51,4 @@ Read [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) before touching 3MF ou
 - Filament profiles live in localStorage (JSON import/export). No cropping or saved projects yet.
 - PrusaSlicer colour changes aren't written — use Plain 3MF + swap-instructions.txt.
 - TypeScript is split into project references ([tsconfig.app.json](tsconfig.app.json), [tsconfig.node.json](tsconfig.node.json)); `npm run build` runs `tsc -b` first.
+- Formatting is **Prettier** ([.prettierrc.json](.prettierrc.json): no semicolons, single quotes, 100 cols); linting is **oxlint**. They're complementary — oxlint doesn't enable formatting rules, so there's no bridge config. Run `npm run format` before committing. [defaultTemplate.json](src/core/defaultTemplate.json) is kept byte-for-byte and is Prettier-ignored ([.prettierignore](.prettierignore)).
