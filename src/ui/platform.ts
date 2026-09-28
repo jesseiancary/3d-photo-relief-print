@@ -10,18 +10,28 @@ export function readJSON<T>(key: string, fallback: T): T {
   }
 }
 export function writeJSON(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)) } catch { /* ignore */ }
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    /* ignore */
+  }
 }
 
 /* ---------- saving files ---------- */
-interface DownloadsNs { save(r: { filename: string; data: Blob | string }): Promise<{ status: string }> }
-interface ClaudeHost { use(name: string): Promise<unknown> }
+interface DownloadsNs {
+  save(r: { filename: string; data: Blob | string }): Promise<{ status: string }>
+}
+interface ClaudeHost {
+  use(name: string): Promise<unknown>
+}
 
 let downloadsP: Promise<DownloadsNs | null> | null = null
 function downloads(): Promise<DownloadsNs | null> {
   if (!downloadsP) {
     const host = (window as unknown as { claude?: ClaudeHost }).claude
-    downloadsP = host?.use ? (host.use('downloads') as Promise<DownloadsNs | null>).catch(() => null) : Promise.resolve(null)
+    downloadsP = host?.use
+      ? (host.use('downloads') as Promise<DownloadsNs | null>).catch(() => null)
+      : Promise.resolve(null)
   }
   return downloadsP
 }
@@ -43,7 +53,11 @@ function anchorDownload(filename: string, blob: Blob) {
  * Save a file. Inside a claude.ai artifact, saves go through the host's download prompt, which doesn't
  * accept .3mf — in that case the file is wrapped in a .zip. Returns a short status line for the UI.
  */
-export async function saveFile(filename: string, data: Uint8Array | string, mime = 'application/octet-stream'): Promise<string> {
+export async function saveFile(
+  filename: string,
+  data: Uint8Array | string,
+  mime = 'application/octet-stream',
+): Promise<string> {
   const blob = new Blob([data as BlobPart], { type: mime })
   const dl = await downloads()
   if (!dl) {
@@ -61,7 +75,10 @@ export async function saveFile(filename: string, data: Uint8Array | string, mime
   const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data
   const zipName = filename.replace(/\.[^.]+$/, '') + '.zip'
   try {
-    await dl.save({ filename: zipName, data: new Blob([zipSync({ [filename]: [bytes, { level: 0 }] }) as BlobPart]) })
+    await dl.save({
+      filename: zipName,
+      data: new Blob([zipSync({ [filename]: [bytes, { level: 0 }] }) as BlobPart]),
+    })
     return `Saved ${zipName} — unzip it to get ${filename}`
   } catch (e) {
     const code = (e as { code?: string }).code

@@ -5,8 +5,20 @@ import type { Settings } from '../core/types'
 export type Request =
   | { kind: 'load'; bitmap: ImageBitmap }
   | { kind: 'preview'; reqId: number; settings: Settings }
-  | { kind: 'export'; reqId: number; settings: Settings; title: string; template: SlicerTemplate | null }
-  | { kind: 'wedge'; reqId: number; settings: Settings; title: string; template: SlicerTemplate | null }
+  | {
+      kind: 'export'
+      reqId: number
+      settings: Settings
+      title: string
+      template: SlicerTemplate | null
+    }
+  | {
+      kind: 'wedge'
+      reqId: number
+      settings: Settings
+      title: string
+      template: SlicerTemplate | null
+    }
 
 export interface PreviewResult {
   kind: 'preview'

@@ -1,6 +1,14 @@
 import { useId, type ReactNode } from 'react'
 
-export function Section({ title, aside, children }: { title: string; aside?: ReactNode; children: ReactNode }) {
+export function Section({
+  title,
+  aside,
+  children,
+}: {
+  title: string
+  aside?: ReactNode
+  children: ReactNode
+}) {
   return (
     <section className="section">
       <header className="section-head">
@@ -25,7 +33,18 @@ interface SliderProps {
   onChange: (v: number) => void
 }
 
-export function Slider({ id, label, value, min, max, step, unit, digits = 0, hint, onChange }: SliderProps) {
+export function Slider({
+  id,
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit,
+  digits = 0,
+  hint,
+  onChange,
+}: SliderProps) {
   return (
     <div className="slider">
       <label htmlFor={id}>
@@ -35,7 +54,15 @@ export function Slider({ id, label, value, min, max, step, unit, digits = 0, hin
           {unit && <span className="unit">{unit}</span>}
         </output>
       </label>
-      <input id={id} type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
       {hint && <p className="hint">{hint}</p>}
     </div>
   )
@@ -54,7 +81,18 @@ interface NumberFieldProps {
   onChange: (v: number | null) => void
 }
 
-export function NumberField({ id, label, value, min, max, step, unit, placeholder, note, onChange }: NumberFieldProps) {
+export function NumberField({
+  id,
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit,
+  placeholder,
+  note,
+  onChange,
+}: NumberFieldProps) {
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
@@ -82,13 +120,32 @@ export function NumberField({ id, label, value, min, max, step, unit, placeholde
   )
 }
 
-export function Segmented<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
+export function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string
+  value: T
+  options: { value: T; label: string }[]
+  onChange: (v: T) => void
+}) {
   const id = useId()
   return (
     <div className="segmented" role="radiogroup" aria-labelledby={id}>
-      <span id={id} className="sr-only">{label}</span>
+      <span id={id} className="sr-only">
+        {label}
+      </span>
       {options.map((o) => (
-        <button key={o.value} type="button" role="radio" aria-checked={value === o.value} className={value === o.value ? 'on' : ''} onClick={() => onChange(o.value)}>
+        <button
+          key={o.value}
+          type="button"
+          role="radio"
+          aria-checked={value === o.value}
+          className={value === o.value ? 'on' : ''}
+          onClick={() => onChange(o.value)}
+        >
           {o.label}
         </button>
       ))}

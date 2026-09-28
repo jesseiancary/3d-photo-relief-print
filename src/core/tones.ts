@@ -48,11 +48,20 @@ export interface TonePlan {
 }
 
 const round3 = (x: number) => Math.round(x * 1000) / 1000
-export const layerTop = (layer: number, p: PrintSettings) => round3(p.firstLayerMm + (layer - 1) * p.layerMm)
+export const layerTop = (layer: number, p: PrintSettings) =>
+  round3(p.firstLayerMm + (layer - 1) * p.layerMm)
 
 export function hexToRgb(hex: string): RGB {
   const h = hex.replace('#', '')
-  const v = parseInt(h.length === 3 ? h.split('').map((c) => c + c).join('') : h, 16)
+  const v = parseInt(
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h,
+    16,
+  )
   return [((v >> 16) & 255) / 255, ((v >> 8) & 255) / 255, (v & 255) / 255]
 }
 const toLin = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
@@ -83,7 +92,13 @@ export function buildBands(filaments: Filament[], p: PrintSettings): Band[] {
   for (let k = 1; k < filaments.length; k++) {
     const f = filaments[k]
     const n = f.layers && f.layers > 0 ? Math.round(f.layers) : autoLayers(f.td, p)
-    bands.push({ filament: k, firstLayer: last + 1, lastLayer: last + n, bottomZ: layerTop(last, p), topZ: layerTop(last + n, p) })
+    bands.push({
+      filament: k,
+      firstLayer: last + 1,
+      lastLayer: last + n,
+      bottomZ: layerTop(last, p),
+      topZ: layerTop(last + n, p),
+    })
     last += n
   }
   return bands
@@ -121,17 +136,25 @@ export function planTones(filaments: Filament[], p: PrintSettings, t: ToneSettin
     chosen = bands.map((b) => candidates.find((c) => c.layer === b.lastLayer)!)
   } else {
     const n = Math.min(Math.max(2, Math.round(t.count)), candidates.length)
-    if (n < t.count) warnings.push(`Only ${candidates.length} distinct heights are available with these bands — using ${n} tones. Add layers to a band or lower the tone count.`)
+    if (n < t.count)
+      warnings.push(
+        `Only ${candidates.length} distinct heights are available with these bands — using ${n} tones. Add layers to a band or lower the tone count.`,
+      )
     const Ls = candidates.map((c) => c.L)
-    const lo = Math.min(...Ls), hi = Math.max(...Ls)
+    const lo = Math.min(...Ls),
+      hi = Math.max(...Ls)
     const used = new Set<number>()
     chosen = []
     for (let i = 0; i < n; i++) {
       const target = lo + ((hi - lo) * i) / (n - 1)
-      let best = -1, bd = Infinity
+      let best = -1,
+        bd = Infinity
       candidates.forEach((c, j) => {
         const d = Math.abs(c.L - target)
-        if (!used.has(j) && d < bd) { bd = d; best = j }
+        if (!used.has(j) && d < bd) {
+          bd = d
+          best = j
+        }
       })
       used.add(best)
       chosen.push(candidates[best])
@@ -140,7 +163,9 @@ export function planTones(filaments: Filament[], p: PrintSettings, t: ToneSettin
   const tones = [...chosen].sort((a, b) => a.L - b.L || a.z - b.z)
   for (let i = 1; i < tones.length; i++)
     if (tones[i].L - tones[i - 1].L < 2)
-      warnings.push(`Two tones (${tones[i - 1].z.toFixed(2)} mm and ${tones[i].z.toFixed(2)} mm) will look almost the same.`)
+      warnings.push(
+        `Two tones (${tones[i - 1].z.toFixed(2)} mm and ${tones[i].z.toFixed(2)} mm) will look almost the same.`,
+      )
 
   const maxZ = Math.max(...tones.map((c) => c.z))
   const swaps: Swap[] = bands
@@ -151,7 +176,9 @@ export function planTones(filaments: Filament[], p: PrintSettings, t: ToneSettin
   const pureL = filaments.map((f) => lstarLin(hexToRgb(f.color).map(toLin) as RGB))
   for (let k = 1; k < pureL.length; k++)
     if (pureL[k] < pureL[k - 1] - 1)
-      warnings.push(`${filaments[k].name} is darker than the filament below it. Stacks usually go dark → light; fine for an accent, but tones may not follow the photo.`)
+      warnings.push(
+        `${filaments[k].name} is darker than the filament below it. Stacks usually go dark → light; fine for an accent, but tones may not follow the photo.`,
+      )
 
   return { bands, candidates, tones, maxZ, swaps, warnings }
 }
@@ -159,13 +186,18 @@ export function planTones(filaments: Filament[], p: PrintSettings, t: ToneSettin
 /** gray (0..255, after adjustments) → index into plan.tones */
 export function toneLut(plan: TonePlan): Uint8Array {
   const lut = new Uint8Array(256)
-  const lo = plan.tones[0].L, hi = plan.tones[plan.tones.length - 1].L
+  const lo = plan.tones[0].L,
+    hi = plan.tones[plan.tones.length - 1].L
   for (let v = 0; v < 256; v++) {
     const target = lo + (lstarGray(v) / 100) * (hi - lo)
-    let best = 0, bd = Infinity
+    let best = 0,
+      bd = Infinity
     plan.tones.forEach((t, i) => {
       const d = Math.abs(t.L - target)
-      if (d < bd) { bd = d; best = i }
+      if (d < bd) {
+        bd = d
+        best = i
+      }
     })
     lut[v] = best
   }

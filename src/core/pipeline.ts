@@ -27,7 +27,10 @@ export function simulatedRGBA(tones: Uint8Array, plan: TonePlan): Uint8ClampedAr
   const out = new Uint8ClampedArray(tones.length * 4)
   for (let i = 0, j = 0; i < tones.length; i++, j += 4) {
     const c = pal[tones[i]]
-    out[j] = c[0]; out[j + 1] = c[1]; out[j + 2] = c[2]; out[j + 3] = 255
+    out[j] = c[0]
+    out[j + 1] = c[1]
+    out[j + 2] = c[2]
+    out[j + 3] = 255
   }
   return out
 }
@@ -35,7 +38,8 @@ export function simulatedRGBA(tones: Uint8Array, plan: TonePlan): Uint8ClampedAr
 export function grayRGBA(g: Gray): Uint8ClampedArray {
   const out = new Uint8ClampedArray(g.data.length * 4)
   for (let i = 0, j = 0; i < g.data.length; i++, j += 4) {
-    out[j] = out[j + 1] = out[j + 2] = g.data[i]; out[j + 3] = 255
+    out[j] = out[j + 1] = out[j + 2] = g.data[i]
+    out[j + 3] = 255
   }
   return out
 }
@@ -49,7 +53,13 @@ export function heightsFor(tones: Uint8Array, plan: TonePlan): { H: Uint8Array; 
   return { H, zs: [0, ...zsSorted] }
 }
 
-export function buildMesh(tones: Uint8Array, cols: number, rows: number, plan: TonePlan, pitch: number): { mesh: Mesh; pinches: number } {
+export function buildMesh(
+  tones: Uint8Array,
+  cols: number,
+  rows: number,
+  plan: TonePlan,
+  pitch: number,
+): { mesh: Mesh; pinches: number } {
   const { H, zs } = heightsFor(tones, plan)
   const pinches = fixPinches(H, cols, rows)
   return { mesh: terraceMesh(H, cols, rows, zs, pitch), pinches }
@@ -65,10 +75,17 @@ export function stepWedge(s: Settings): { mesh: Mesh; plan: TonePlan; sizeMm: [n
     ...plan0,
     tones: [...plan0.candidates].sort((a, b) => a.z - b.z),
     maxZ: Math.max(...plan0.candidates.map((c) => c.z)),
-    swaps: plan0.bands.slice(1).map((b) => ({ layer: b.firstLayer, z: plan0.candidates.find((c) => c.layer === b.firstLayer)!.z, filament: b.filament })),
+    swaps: plan0.bands.slice(1).map((b) => ({
+      layer: b.firstLayer,
+      z: plan0.candidates.find((c) => c.layer === b.firstLayer)!.z,
+      filament: b.filament,
+    })),
     warnings: [],
   }
-  const pitch = 0.25, patch = 32, gap = 8, margin = 12 // cells
+  const pitch = 0.25,
+    patch = 32,
+    gap = 8,
+    margin = 12 // cells
   const bands = plan.bands.slice(1)
   const maxN = Math.max(...bands.map((b) => b.lastLayer - b.firstLayer + 1))
   const cols = margin * 2 + maxN * patch + (maxN - 1) * gap
@@ -80,7 +97,8 @@ export function stepWedge(s: Settings): { mesh: Mesh; plan: TonePlan; sizeMm: [n
   bands.forEach((b, r) => {
     for (let j = 0; j <= b.lastLayer - b.firstLayer; j++) {
       const h = hOf(b.firstLayer + j)
-      const y0 = margin + r * (patch + gap), x0 = margin + j * (patch + gap)
+      const y0 = margin + r * (patch + gap),
+        x0 = margin + j * (patch + gap)
       for (let y = y0; y < y0 + patch; y++) H.fill(h, y * cols + x0, y * cols + x0 + patch)
     }
   })

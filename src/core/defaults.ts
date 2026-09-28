@@ -16,7 +16,10 @@ export const FILAMENT_PRESETS: Omit<Filament, 'id'>[] = [
 ]
 
 export const defaultFilaments = (): Filament[] =>
-  [FILAMENT_PRESETS[0], FILAMENT_PRESETS[1], FILAMENT_PRESETS[3]].map((f) => ({ ...f, id: newId() }))
+  [FILAMENT_PRESETS[0], FILAMENT_PRESETS[1], FILAMENT_PRESETS[3]].map((f) => ({
+    ...f,
+    id: newId(),
+  }))
 
 export const defaultSettings = (): Settings => ({
   print: { heightIn: 8, baseMm: 0.56, layerMm: 0.08, firstLayerMm: 0.16, pitchMm: 0.1 },

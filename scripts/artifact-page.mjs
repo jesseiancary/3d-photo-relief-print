@@ -8,5 +8,8 @@ const title = head.match(/<title>[\s\S]*?<\/title>/)[0]
 const links = head.match(/<link[^>]*>/g)?.join('\n') ?? ''
 const styles = head.match(/<style[\s\S]*?<\/style>/g)?.join('\n') ?? ''
 const scripts = head.match(/<script[\s\S]*?<\/script>/g)?.join('\n') ?? ''
-writeFileSync('dist-single/photo-relief.html', [title, links, styles, body.trim(), scripts].join('\n'))
+writeFileSync(
+  'dist-single/photo-relief.html',
+  [title, links, styles, body.trim(), scripts].join('\n'),
+)
 console.log('wrote dist-single/photo-relief.html')
