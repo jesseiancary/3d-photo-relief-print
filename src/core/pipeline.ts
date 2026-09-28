@@ -17,7 +17,7 @@ export function process(src: Gray, s: Settings, mmPerPx: number): Processed {
   const plan = planTones(s.filaments, s.print, s.tones)
   const adjusted = adjust(src, s.adjust, mmPerPx)
   const tones = quantize(adjusted, toneLut(plan))
-  const counts = new Array(plan.tones.length).fill(0)
+  const counts = Array.from({ length: plan.tones.length }, () => 0)
   for (const t of tones) counts[t]++
   return { plan, adjusted, tones, counts }
 }

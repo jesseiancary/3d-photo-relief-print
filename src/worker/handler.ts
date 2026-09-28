@@ -50,7 +50,7 @@ export function createHandler(post: Post) {
         const g = gridFor(source.width, source.height, heightMm, s.print.pitchMm, PREVIEW_ROWS)
         const src = grayAt(g.cols, g.rows)
         const p = process(src, s, g.mmPerPx)
-        const hist = new Array(256).fill(0)
+        const hist = Array.from({ length: 256 }, () => 0)
         for (const v of src.data) hist[v]++
         const sim = simulatedRGBA(p.tones, p.plan)
         const adj = grayRGBA(p.adjusted)
