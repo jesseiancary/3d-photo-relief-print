@@ -73,7 +73,7 @@ export function PreviewCard({
         )}
         {!hasPreview && <p className="stage-empty">Preparing preview…</p>}
         {isSample && hasPreview && (
-          <span className="sample-tag">Sample scene · choose a photo to start</span>
+          <span className="sample-tag">Sample Scene · choose a photo to start</span>
         )}
       </div>
     </div>

@@ -20,7 +20,7 @@ export function SlicerTemplateSection({
   const templateRef = useRef<HTMLInputElement>(null)
   return (
     <Section
-      title="Slicer template"
+      title="Slicer Template"
       aside={
         isCustom ? (
           <button type="button" className="link-btn" onClick={onReset}>
@@ -47,7 +47,7 @@ export function SlicerTemplateSection({
           }}
         />
         <button type="button" className="btn" onClick={() => templateRef.current?.click()}>
-          Import template (.3mf)
+          Import Template (.3mf)
         </button>
       </div>
       {tpl.filamentSlots < filamentCount && (

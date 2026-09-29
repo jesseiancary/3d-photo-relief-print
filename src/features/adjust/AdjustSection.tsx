@@ -16,7 +16,7 @@ export function AdjustSection({ adjust, defaults, canAutoLevel, onChange, onAuto
       title="Adjust"
       aside={
         <button type="button" className="link-btn" onClick={onAutoLevels} disabled={!canAutoLevel}>
-          Auto levels
+          Auto Levels
         </button>
       }
     >
@@ -35,7 +35,7 @@ export function AdjustSection({ adjust, defaults, canAutoLevel, onChange, onAuto
       />
       <Slider
         id="black"
-        label="Black point"
+        label="Black Point"
         min={0}
         max={200}
         step={1}
@@ -45,7 +45,7 @@ export function AdjustSection({ adjust, defaults, canAutoLevel, onChange, onAuto
       />
       <Slider
         id="white"
-        label="White point"
+        label="White Point"
         min={55}
         max={255}
         step={1}

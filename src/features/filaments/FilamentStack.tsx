@@ -86,14 +86,14 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   id={`fil-name-${f.id}`}
                   className="fil-name"
                   value={f.name}
-                  aria-label="Filament name"
+                  aria-label="Filament Name"
                   onChange={(e) => update(i, { name: e.target.value })}
                 />
                 <div className="fil-order">
                   <button
                     type="button"
                     className="icon-btn"
-                    aria-label="Move up"
+                    aria-label="Move Up"
                     disabled={i === filaments.length - 1}
                     onClick={() => move(i, 1)}
                   >
@@ -102,7 +102,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   <button
                     type="button"
                     className="icon-btn"
-                    aria-label="Move down"
+                    aria-label="Move Down"
                     disabled={i === 0}
                     onClick={() => move(i, -1)}
                   >
@@ -175,7 +175,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
       <div className="row-actions">
         <select
           id="add-filament"
-          aria-label="Add filament"
+          aria-label="Add Filament"
           value=""
           disabled={filaments.length >= MAX_FILAMENTS}
           onChange={(e) => add(Number(e.target.value))}
@@ -193,12 +193,12 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
       </div>
 
       <details className="profiles">
-        <summary>Filament profiles</summary>
+        <summary>Filament Profiles</summary>
         <div className="profiles-body">
           <div className="row-actions">
             <select
               id="load-profile"
-              aria-label="Load profile"
+              aria-label="Load Profile"
               value=""
               disabled={!profiles.length}
               onChange={(e) => loadProfile(e.target.value)}
@@ -216,12 +216,12 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
           <div className="row-actions">
             <input
               id="profile-name"
-              placeholder="Profile name"
+              placeholder="Profile Name"
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
             />
             <button type="button" className="btn" onClick={saveProfile}>
-              Save current
+              Save Current
             </button>
           </div>
           {profiles.length > 0 && (

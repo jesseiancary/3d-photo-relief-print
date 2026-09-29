@@ -23,7 +23,7 @@ export function PrintGeometrySection({
   onChange,
 }: Props) {
   return (
-    <Section title="Print geometry">
+    <Section title="Print Geometry">
       <div className="grid2">
         <NumberField
           id="height-in"
@@ -58,7 +58,7 @@ export function PrintGeometrySection({
       </div>
       <Slider
         id="corner-radius"
-        label="Corner radius"
+        label="Corner Radius"
         min={0}
         max={10}
         step={1}
@@ -68,11 +68,11 @@ export function PrintGeometrySection({
         onChange={(v) => onChange({ cornerRadius: v })}
       />
       <details className="more">
-        <summary>Layer settings</summary>
+        <summary>Layer Settings</summary>
         <div className="grid2">
           <NumberField
             id="layer-mm"
-            label="Layer height"
+            label="Layer Height"
             unit="mm"
             value={p.layerMm}
             min={0.04}
@@ -82,7 +82,7 @@ export function PrintGeometrySection({
           />
           <NumberField
             id="first-layer-mm"
-            label="First layer"
+            label="First Layer"
             unit="mm"
             value={p.firstLayerMm}
             min={0.08}
@@ -92,7 +92,7 @@ export function PrintGeometrySection({
           />
         </div>
         <div className="field">
-          <label htmlFor="pitch">Model detail</label>
+          <label htmlFor="pitch">Model Detail</label>
           <select
             id="pitch"
             value={p.pitchMm}

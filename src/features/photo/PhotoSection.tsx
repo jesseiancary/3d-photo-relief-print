@@ -38,7 +38,7 @@ export function PhotoSection({ isSample, imageName, dragging, setDragging, onFil
           }}
         />
         <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-          Choose photo
+          Choose Photo
         </button>
         <span className="drop-note">
           {isSample ? 'or drop one here · showing a sample scene' : imageName}

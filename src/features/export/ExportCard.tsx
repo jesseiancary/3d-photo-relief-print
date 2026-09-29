@@ -37,7 +37,7 @@ export function ExportCard({
   return (
     <div className="export-card">
       <div className="field grow">
-        <label htmlFor="file-title">File name</label>
+        <label htmlFor="file-title">File Name</label>
         <div className="input-unit">
           <input
             id="file-title"
@@ -67,7 +67,7 @@ export function ExportCard({
           Plain 3MF
         </button>
         <button type="button" className="btn ghost" disabled={!!busy} onClick={onWedge}>
-          Step wedge
+          Step Wedge
         </button>
       </div>
       {busy && (

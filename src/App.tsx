@@ -110,7 +110,7 @@ export default function App() {
           />
         </aside>
 
-        <section className="workspace" aria-label="Preview and export">
+        <section className="workspace" aria-label="Preview and Export">
           <PreviewCard
             view={view}
             setView={setView}
@@ -141,7 +141,7 @@ export default function App() {
                 <StackDiagram plan={plan} filaments={settings.filaments} counts={preview.counts} />
               </div>
               <div className="panel">
-                <h3>Filament swaps</h3>
+                <h3>Filament Swaps</h3>
                 <SwapTable plan={plan} filaments={settings.filaments} />
                 <p className="hint num">
                   Slicer: {p.layerMm} mm layers · {p.firstLayerMm} mm first layer · 100% infill · 1
