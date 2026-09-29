@@ -67,7 +67,7 @@ export function useReliefEngine({ settings, template, say, clear }: Params) {
   )
 
   useEffect(() => {
-    void sampleImage().then((b) => loadImage(b, 'Sample scene', true))
+    void sampleImage().then((b) => loadImage(b, 'Sample Scene', true))
   }, [loadImage])
 
   useEffect(() => {
