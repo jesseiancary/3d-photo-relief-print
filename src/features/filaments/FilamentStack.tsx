@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '../core/defaults'
-import { autoLayers, type Band } from '../core/tones'
-import type { Filament, PrintSettings } from '../core/types'
-import { pickTextFile, readJSON, saveFile, writeJSON } from './platform'
+import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '@/core/defaults'
+import { autoLayers, type Band } from '@/core/tones'
+import type { Filament, PrintSettings } from '@/core/types'
+import { pickTextFile, readJSON, saveFile, writeJSON } from '@/lib/platform'
 
 const PROFILES_KEY = 'photo-relief.profiles.v1'
 interface Profile {
@@ -10,7 +10,7 @@ interface Profile {
   filaments: Omit<Filament, 'id'>[]
 }
 
-interface Props {
+export interface FilamentStackProps {
   filaments: Filament[]
   bands: Band[] | null
   print: PrintSettings
@@ -18,7 +18,7 @@ interface Props {
   onStatus: (msg: string) => void
 }
 
-export function FilamentStack({ filaments, bands, print, onChange, onStatus }: Props) {
+export function FilamentStack({ filaments, bands, print, onChange, onStatus }: FilamentStackProps) {
   const [profiles, setProfiles] = useState<Profile[]>(() => readJSON<Profile[]>(PROFILES_KEY, []))
   const [profileName, setProfileName] = useState('')
 
