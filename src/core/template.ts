@@ -85,6 +85,17 @@ export function projectConfigFor(
   c.filament_colour = colour
   c.layer_height = String(p.layerMm)
   c.initial_layer_print_height = String(p.firstLayerMm)
+  // Bambu reloads the named process preset on import and only honours keys listed in
+  // different_settings_to_system as overrides; keys absent from it snap back to the preset's
+  // value. Register our layer heights (the process slot is index 0) or they'd be ignored.
+  const diffs = Array.isArray(c.different_settings_to_system)
+    ? [...(c.different_settings_to_system as string[])]
+    : ['']
+  const process = new Set((diffs[0] ?? '').split(';').filter(Boolean))
+  process.add('layer_height')
+  process.add('initial_layer_print_height')
+  diffs[0] = [...process].join(';')
+  c.different_settings_to_system = diffs
   const warning =
     filaments.length > slots
       ? `The stack has ${filaments.length} filaments but the template has ${slots} slots. Save a template with at least ${filaments.length} filaments and import it, or the extra colours won't be set.`
