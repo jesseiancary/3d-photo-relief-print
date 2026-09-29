@@ -22,7 +22,14 @@ export const defaultFilaments = (): Filament[] =>
   }))
 
 export const defaultSettings = (): Settings => ({
-  print: { heightIn: 8, baseMm: 0.56, layerMm: 0.08, firstLayerMm: 0.16, pitchMm: 0.1 },
+  print: {
+    heightIn: 8,
+    baseMm: 0.56,
+    layerMm: 0.08,
+    firstLayerMm: 0.16,
+    pitchMm: 0.1,
+    cornerRadius: 0,
+  },
   adjust: { blurMm: 0.3, blackPoint: 10, whitePoint: 245, gamma: 1, sharpen: 0.5 },
   tones: { mode: 'photo', count: 8 },
   filaments: defaultFilaments(),

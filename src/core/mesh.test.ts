@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { checkManifold, fixPinches, terraceMesh } from './mesh'
+import { checkManifold, cornerMask, fixPinches, terraceMesh } from './mesh'
 
 function randGrid(cols: number, rows: number, levels: number, seed: number) {
   let s = seed
@@ -44,6 +44,31 @@ describe('terrace mesh', () => {
       const m = terraceMesh(H, cols, rows, zs, 0.1)
       const c = checkManifold(m)
       expect(c.bad).toBe(0)
+      expect(c.volume).toBeCloseTo(expectedVolume(H, zs, 0.1), 4)
+    })
+  }
+
+  it('radius 0 keeps the full rectangle (no mask)', () => {
+    expect(cornerMask(10, 10, 0)).toBeNull()
+  })
+
+  for (const [cols, rows, levels, seed, pct] of [
+    [40, 33, 10, 3, 10],
+    [30, 30, 4, 5, 20],
+    [12, 48, 6, 7, 15],
+  ] as const) {
+    it(`rounded ${cols}x${rows} (${pct}% radius) is watertight with the right volume`, () => {
+      const H = randGrid(cols, rows, levels, seed)
+      const keep = cornerMask(cols, rows, (pct / 100) * Math.max(cols, rows))!
+      expect(keep).not.toBeNull()
+      expect(keep.some((k) => k === 0)).toBe(true) // corners were actually dropped
+      for (let i = 0; i < H.length; i++) if (!keep[i]) H[i] = 0
+      fixPinches(H, cols, rows)
+      const zs = zsFor(levels)
+      const m = terraceMesh(H, cols, rows, zs, 0.1)
+      const c = checkManifold(m)
+      expect(c.bad).toBe(0)
+      expect(c.ok).toBe(true)
       expect(c.volume).toBeCloseTo(expectedVolume(H, zs, 0.1), 4)
     })
   }

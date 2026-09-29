@@ -1,5 +1,6 @@
 /** Runs in the Web Worker (or on the main thread as a fallback when workers are unavailable). */
 import { gridFor, rgbaToGray, type Gray } from '../core/image'
+import { cornerMask } from '../core/mesh'
 import { buildMesh, grayRGBA, process, simulatedRGBA, stepWedge } from '../core/pipeline'
 import { write3mf } from '../core/threemf'
 import type { Request, Response } from './protocol'
@@ -53,6 +54,12 @@ export function createHandler(post: Post) {
         const hist = Array.from({ length: 256 }, () => 0)
         for (const v of src.data) hist[v]++
         const sim = simulatedRGBA(p.tones, p.plan)
+        const keep = cornerMask(
+          g.cols,
+          g.rows,
+          (s.print.cornerRadius / 100) * Math.max(g.cols, g.rows),
+        )
+        if (keep) for (let i = 0; i < keep.length; i++) if (!keep[i]) sim[i * 4 + 3] = 0
         const adj = grayRGBA(p.adjusted)
         post(
           {
@@ -79,7 +86,14 @@ export function createHandler(post: Post) {
         post({ kind: 'progress', reqId, stage: 'Processing image', frac: 0.05 })
         const p = process(grayAt(g.cols, g.rows), s, g.mmPerPx)
         post({ kind: 'progress', reqId, stage: 'Building mesh', frac: 0.25 })
-        const { mesh, pinches } = buildMesh(p.tones, g.cols, g.rows, p.plan, g.mmPerPx)
+        const { mesh, pinches } = buildMesh(
+          p.tones,
+          g.cols,
+          g.rows,
+          p.plan,
+          g.mmPerPx,
+          s.print.cornerRadius,
+        )
         const sizeMm: [number, number] = [g.widthMm, g.heightMm]
         const bytes = write3mf(
           {

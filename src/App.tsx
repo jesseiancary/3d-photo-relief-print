@@ -282,7 +282,7 @@ export default function App() {
             </div>
           </Section>
 
-          <Section title="Print size">
+          <Section title="Print Geometry">
             <div className="grid2">
               <NumberField
                 id="height-in"
@@ -315,6 +315,17 @@ export default function App() {
                 onChange={(v) => v && set('print', { baseMm: Math.max(p.firstLayerMm, v) })}
               />
             </div>
+            <Slider
+              id="corner-radius"
+              label="Corner radius"
+              min={0}
+              max={10}
+              step={1}
+              digits={0}
+              value={p.cornerRadius}
+              defaultValue={defs.print.cornerRadius}
+              onChange={(v) => set('print', { cornerRadius: v })}
+            />
             <details className="more">
               <summary>Layer settings</summary>
               <div className="grid2">
