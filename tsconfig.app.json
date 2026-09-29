@@ -9,6 +9,9 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
 
+    /* Path alias: @/ -> src/ (paths resolve relative to this tsconfig under moduleResolution: bundler) */
+    "paths": { "@/*": ["./src/*"] },
+
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
