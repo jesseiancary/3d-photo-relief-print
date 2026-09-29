@@ -264,6 +264,31 @@ select {
   font-size: 12px;
   font-weight: 500;
 }
+.field .field-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.field .field-title:disabled {
+  cursor: default;
+}
+.field .field-title .reset-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.field .field-title:not(:disabled):hover .reset-hint,
+.field .field-title:focus-visible .reset-hint {
+  opacity: 1;
+}
 .input-unit {
   position: relative;
   display: flex;
