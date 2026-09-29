@@ -10,6 +10,7 @@ interface NumberFieldProps {
   unit?: string
   placeholder?: string
   note?: ReactNode
+  defaultValue?: number
   onChange: (v: number | null) => void
 }
 
@@ -23,11 +24,31 @@ export function NumberField({
   unit,
   placeholder,
   note,
+  defaultValue,
   onChange,
 }: NumberFieldProps) {
+  const canReset = defaultValue !== undefined && value !== defaultValue
   return (
     <div className="field">
-      <label htmlFor={id}>{label}</label>
+      {defaultValue === undefined ? (
+        <label htmlFor={id}>{label}</label>
+      ) : (
+        <label htmlFor={id}>
+          <button
+            type="button"
+            className="field-title"
+            title="Reset to default"
+            aria-label={`${label} — reset to default`}
+            disabled={!canReset}
+            onClick={() => onChange(defaultValue)}
+          >
+            <span>{label}</span>
+            <span className="reset-hint" aria-hidden="true">
+              Reset to default
+            </span>
+          </button>
+        </label>
+      )}
       <div className="input-unit">
         <input
           id={id}

@@ -75,6 +75,7 @@ export function PrintGeometrySection({
             label="Layer Height"
             unit="mm"
             value={p.layerMm}
+            defaultValue={defaults.layerMm}
             min={0.04}
             max={0.3}
             step={0.02}
@@ -85,6 +86,7 @@ export function PrintGeometrySection({
             label="First Layer"
             unit="mm"
             value={p.firstLayerMm}
+            defaultValue={defaults.firstLayerMm}
             min={0.08}
             max={0.4}
             step={0.02}
