@@ -104,8 +104,7 @@ export function PrintGeometrySection({
           </select>
         </div>
         <p className="hint">
-          Set the same layer heights in your slicer. The 3MF carries the swaps, not the layer
-          height.
+          The 3MF carries these layer heights and the swaps, so the slicer loads them for you.
         </p>
       </details>
     </Section>

@@ -63,6 +63,10 @@ describe('end to end', () => {
     )
     expect(cfg.layer_height).toBe(String(s.print.layerMm))
     expect(cfg.initial_layer_print_height).toBe(String(s.print.firstLayerMm))
+    // the layer heights must be registered as overrides or Bambu reverts them to the preset
+    const overrides = (cfg.different_settings_to_system[0] as string).split(';')
+    expect(overrides).toContain('layer_height')
+    expect(overrides).toContain('initial_layer_print_height')
     expect(strFromU8(files['Metadata/custom_gcode_per_layer.xml'])).toContain('top_z="0.6400"')
     expect(strFromU8(files['swap-instructions.txt'])).toContain('swap to Elegoo Silk Silver')
 

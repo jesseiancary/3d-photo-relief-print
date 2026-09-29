@@ -56,6 +56,15 @@ panel; `parseTemplate()` extracts the config + Application tag from any saved pr
 
 ## Other gotchas
 
+- **Overridden config keys must be listed in `different_settings_to_system`, or the slicer
+  reverts them.** `project_settings.config` is a full snapshot, but on import Bambu reloads the
+  named presets (`print_settings_id`, etc.) and only keeps as user overrides the keys named in
+  `different_settings_to_system`. Any key that isn't listed snaps back to the preset's value —
+  so writing `layer_height` / `initial_layer_print_height` into the config isn't enough on its
+  own; they must also be added to that array's **process slot (index 0)**. The array is
+  `[process, filament×N, printer]`. `projectConfigFor()` registers our two layer-height keys
+  there. (Filament colours are exempt — Bambu applies `filament_colour` as a project/extruder
+  assignment that survives without an override entry.)
 - **`[Content_Types].xml` must not declare `project_settings.config` as `application/xml`.** It's JSON.
   If declared as XML, the loader XML-parses JSON, fails, and drops all config — same "geometry only"
   outcome. Bambu's own files don't declare the `.config` parts in Content_Types at all; the loader reads
