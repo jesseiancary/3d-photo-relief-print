@@ -1,8 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { defaultSettings } from '@/core/defaults'
-import { DEFAULT_TEMPLATE, parseTemplate, type SlicerTemplate, summarize } from '@/core/template'
+import { useRef, useState } from 'react'
 import { baseLayers, layerTop } from '@/core/tones'
-import type { Settings } from '@/core/types'
 import { AdjustSection, computeAutoLevels } from '@/features/adjust'
 import { ExportCard } from '@/features/export'
 import { FilamentsSection } from '@/features/filaments'
@@ -12,190 +9,28 @@ import { PreviewCard, type View } from '@/features/preview'
 import { PrintGeometrySection } from '@/features/print'
 import { SlicerTemplateSection } from '@/features/template'
 import { TonesSection } from '@/features/tones'
-import { readJSON, saveFile, writeJSON } from '@/lib/platform'
-import { sampleImage } from '@/lib/sample'
+import { useCanvasPreview, useReliefEngine, useSettings, useStatus, useTemplate } from '@/hooks'
 import { slug } from '@/lib/slug'
-import { Engine, type PreviewResult } from '@/worker/client'
 
-const SETTINGS_KEY = 'photo-relief.settings.v1'
 const BED_MM = 250
 
-function loadSettings(): Settings {
-  const d = defaultSettings()
-  const s = readJSON<Partial<Settings>>(SETTINGS_KEY, {})
-  return {
-    print: { ...d.print, ...s.print },
-    adjust: { ...d.adjust, ...s.adjust },
-    tones: { ...d.tones, ...s.tones },
-    filaments: s.filaments?.length ? s.filaments : d.filaments,
-  }
-}
-
-const TEMPLATE_KEY = 'photo-relief.template.v1'
-function loadTemplate(): SlicerTemplate {
-  const raw = localStorage.getItem(TEMPLATE_KEY)
-  if (raw) {
-    try {
-      return JSON.parse(raw) as SlicerTemplate
-    } catch {
-      /* fall through */
-    }
-  }
-  return DEFAULT_TEMPLATE
-}
-
 export default function App() {
-  const engine = useMemo(() => new Engine(), [])
-  const defs = useMemo(defaultSettings, [])
-  const [settings, setSettings] = useState<Settings>(loadSettings)
-  const [template, setTemplate] = useState<SlicerTemplate>(loadTemplate)
-  const [preview, setPreview] = useState<PreviewResult | null>(null)
-  const [imageUrl, setImageUrl] = useState<string | null>(null)
-  const [imageName, setImageName] = useState<string>('')
-  const [isSample, setIsSample] = useState(true)
-  const [imageVersion, setImageVersion] = useState(0)
+  const { status, say, clear } = useStatus()
+  const { settings, defs, set, setFilaments } = useSettings()
+  const { template, summary: tpl, isCustom, importTemplate, resetTemplate } = useTemplate(say)
+  const engine = useReliefEngine({ settings, template, say, clear })
+
   const [view, setView] = useState<View>('print')
-  const [title, setTitle] = useState('')
-  const [busy, setBusy] = useState<{ stage: string; frac: number } | null>(null)
-  const [status, setStatus] = useState<{ text: string; tone: 'ok' | 'err' } | null>(null)
   const [dragging, setDragging] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-
-  const say = useCallback(
-    (text: string, tone: 'ok' | 'err' = 'ok') => setStatus({ text, tone }),
-    [],
-  )
-
-  useEffect(
-    () =>
-      engine.on((r) => {
-        if (r.kind === 'loaded') setImageVersion((v) => v + 1)
-        else if (r.kind === 'preview') setPreview(r)
-        else if (r.kind === 'error' && r.reqId === -2) say(r.message, 'err')
-      }),
-    [engine, say],
-  )
-
-  const loadImage = useCallback(
-    async (blob: Blob, name: string, sample = false) => {
-      try {
-        await engine.load(blob)
-        setImageUrl((old) => {
-          if (old) URL.revokeObjectURL(old)
-          return URL.createObjectURL(blob)
-        })
-        setImageName(name)
-        setIsSample(sample)
-        if (!sample) setTitle(slug(name))
-        setStatus(null)
-      } catch {
-        say(
-          `Couldn't read ${name}. Use a JPEG, PNG or WebP (iPhone HEIC photos need converting first).`,
-          'err',
-        )
-      }
-    },
-    [engine, say],
-  )
-
-  useEffect(() => {
-    void sampleImage().then((b) => loadImage(b, 'Sample scene', true))
-  }, [loadImage])
-
-  useEffect(() => {
-    writeJSON(SETTINGS_KEY, settings)
-    if (imageVersion > 0) engine.preview(settings)
-  }, [settings, imageVersion, engine])
-
-  useEffect(() => {
-    const c = canvasRef.current
-    if (!c || !preview || view === 'original') return
-    c.width = preview.cols
-    c.height = preview.rows
-    const data = view === 'print' ? preview.sim : preview.adj
-    c.getContext('2d')!.putImageData(
-      new ImageData(new Uint8ClampedArray(data), preview.cols, preview.rows),
-      0,
-      0,
-    )
-  }, [preview, view])
-
-  const set = <K extends 'print' | 'adjust' | 'tones'>(k: K, patch: Partial<Settings[K]>) =>
-    setSettings((s) => ({ ...s, [k]: { ...s[k], ...patch } }))
-  const setFilaments = (filaments: Settings['filaments']) =>
-    setSettings((s) => ({ ...s, filaments }))
-
-  const onFiles = (files: FileList | null) => {
-    const f = files?.[0]
-    if (!f) return
-    if (!f.type.startsWith('image/')) return say(`${f.name} isn't an image.`, 'err')
-    void loadImage(f, f.name)
-  }
+  useCanvasPreview(canvasRef, engine.preview, view)
 
   const autoLevels = () => {
-    if (!preview) return
-    set('adjust', computeAutoLevels(preview.hist))
+    if (!engine.preview) return
+    set('adjust', computeAutoLevels(engine.preview.hist))
   }
 
-  const tpl = summarize(template)
-  const applyTemplate = (t: SlicerTemplate) => {
-    setTemplate(t)
-    if (t === DEFAULT_TEMPLATE) localStorage.removeItem(TEMPLATE_KEY)
-    else localStorage.setItem(TEMPLATE_KEY, JSON.stringify(t))
-  }
-  const resetTemplate = () => {
-    applyTemplate(DEFAULT_TEMPLATE)
-    say('Reverted to the built-in P2S template')
-  }
-  const onTemplate = async (files: FileList | null) => {
-    const f = files?.[0]
-    if (!f) return
-    try {
-      const t = parseTemplate(new Uint8Array(await f.arrayBuffer()))
-      applyTemplate(t)
-      const s = summarize(t)
-      say(`Template: ${s.printer} · ${s.application} · ${s.filamentSlots} slots`)
-    } catch (e) {
-      say((e as Error).message, 'err')
-    }
-  }
-
-  const fileBase = title || slug(imageName)
-  const doExport = async (plain = false) => {
-    setBusy({ stage: 'Starting', frac: 0 })
-    setStatus(null)
-    try {
-      const r = await engine.export(settings, fileBase, plain ? null : template, (stage, frac) =>
-        setBusy({ stage, frac }),
-      )
-      setBusy({ stage: 'Saving', frac: 1 })
-      const msg = await saveFile(`${fileBase}.3mf`, r.bytes)
-      const mb = (r.bytes.length / 1048576).toFixed(1)
-      say(`${msg} · ${(r.triangles / 1000).toFixed(0)}k triangles · ${mb} MB`)
-    } catch (e) {
-      say((e as Error).message, 'err')
-    } finally {
-      setBusy(null)
-    }
-  }
-  const doWedge = async () => {
-    setBusy({ stage: 'Building step wedge', frac: 0.5 })
-    try {
-      const r = await engine.wedge(settings, 'step-wedge', template)
-      const name = `step-wedge-${settings.filaments
-        .map((f) => slug(f.name.split(' ').pop() ?? ''))
-        .join('-')
-        .toLowerCase()}.3mf`
-      say(
-        `${await saveFile(name, r.bytes)} · ${r.sizeMm[0].toFixed(0)} × ${r.sizeMm[1].toFixed(0)} mm`,
-      )
-    } catch (e) {
-      say((e as Error).message, 'err')
-    } finally {
-      setBusy(null)
-    }
-  }
-
+  const preview = engine.preview
   const p = settings.print
   const nBase = baseLayers(p)
   const actualBase = layerTop(nBase, p)
@@ -226,11 +61,11 @@ export default function App() {
       <main className="layout">
         <aside className="controls" aria-label="Settings">
           <PhotoSection
-            isSample={isSample}
-            imageName={imageName}
+            isSample={engine.isSample}
+            imageName={engine.imageName}
             dragging={dragging}
             setDragging={setDragging}
-            onFiles={onFiles}
+            onFiles={engine.onFiles}
           />
 
           <PrintGeometrySection
@@ -268,9 +103,9 @@ export default function App() {
 
           <SlicerTemplateSection
             summary={tpl}
-            isCustom={template !== DEFAULT_TEMPLATE}
+            isCustom={isCustom}
             filamentCount={settings.filaments.length}
-            onImport={onTemplate}
+            onImport={importTemplate}
             onReset={resetTemplate}
           />
         </aside>
@@ -283,11 +118,11 @@ export default function App() {
             plan={plan}
             widthMm={widthMm}
             heightIn={p.heightIn}
-            imageUrl={imageUrl}
-            isSample={isSample}
+            imageUrl={engine.imageUrl}
+            isSample={engine.isSample}
             dragging={dragging}
             setDragging={setDragging}
-            onFiles={onFiles}
+            onFiles={engine.onFiles}
             canvasRef={canvasRef}
           />
 
@@ -317,17 +152,17 @@ export default function App() {
           )}
 
           <ExportCard
-            title={title}
-            setTitle={setTitle}
-            namePlaceholder={slug(imageName)}
-            busy={busy}
+            title={engine.title}
+            setTitle={engine.setTitle}
+            namePlaceholder={slug(engine.imageName)}
+            busy={engine.busy}
             status={status}
             canExport={!!preview}
             printerName={tpl.printer}
             usingWorker={engine.usingWorker}
-            onExport={() => doExport()}
-            onPlainExport={() => doExport(true)}
-            onWedge={doWedge}
+            onExport={() => engine.doExport()}
+            onPlainExport={() => engine.doExport(true)}
+            onWedge={engine.doWedge}
           />
         </section>
       </main>

@@ -12,7 +12,8 @@
 
 ## Where the impurity lives instead
 
-- **DOM / image decoding** → [src/ui/](../../src/ui/) and [src/worker/handler.ts](../../src/worker/handler.ts) (which caches the source `ImageBitmap` at several resolutions, then hands typed arrays to core).
+- **DOM / image decoding** → the React layer ([src/components/](../../src/components/), [src/features/](../../src/features/), [src/hooks/](../../src/hooks/), [src/lib/](../../src/lib/)) and [src/worker/handler.ts](../../src/worker/handler.ts) (which caches the source `ImageBitmap` at several resolutions, then hands typed arrays to core).
+- **Browser platform (localStorage, canvas, file save/pick)** → [src/lib/](../../src/lib/), consumed by hooks/components.
 - **Messaging / threading** → [src/worker/](../../src/worker/) (`protocol.ts` contract, `client.ts` Engine, `handler.ts` logic — the same `createHandler` also runs on the main thread as a fallback).
 - **File I/O** → [scripts/cli.ts](../../scripts/cli.ts).
 

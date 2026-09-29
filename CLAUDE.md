@@ -24,7 +24,7 @@ npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a
 
 ## Architecture
 
-The pipeline is: **photo → grey → median blur → levels (black/white point, gamma) → sharpen → snap each pixel to the nearest printable tone → terraced mesh → 3MF.** The `src/core/` modules are pure and framework-free; `src/worker/` runs them off the main thread; `src/ui/` + `src/App.tsx` is the React layer.
+The pipeline is: **photo → grey → median blur → levels (black/white point, gamma) → sharpen → snap each pixel to the nearest printable tone → terraced mesh → 3MF.** The `src/core/` modules are pure and framework-free; `src/worker/` runs them off the main thread; `src/components/` + `src/features/` + `src/hooks/` + `src/lib/` + `src/App.tsx` is the React layer. Imports use a `@/` → `src/` path alias (configured in [tsconfig.app.json](tsconfig.app.json) and [vite.config.ts](vite.config.ts)).
 
 **Core (`src/core/`)** — the whole engine, all pure functions over typed arrays:
 
@@ -36,6 +36,14 @@ The pipeline is: **photo → grey → median blur → levels (black/white point,
 - [types.ts](src/core/types.ts) — `Settings` (`print`, `adjust`, `tones`, `filaments`) is the central config object threaded everywhere.
 
 **Worker (`src/worker/`)** — [protocol.ts](src/worker/protocol.ts) is the message contract (Request/Response). [handler.ts](src/worker/handler.ts) holds the actual logic and caches the source `ImageBitmap` at multiple resolutions. [client.ts](src/worker/client.ts) `Engine` talks to it: previews are **latest-wins** (one in flight, one queued) so slider drags don't back up, and it **falls back to running the handler on the main thread** if the worker can't start (some sandboxes block workers). The same `createHandler` runs in both places.
+
+**UI (React)** — feature-sliced, one component per directory, each with a barrel `index.ts`:
+
+- [src/App.tsx](src/App.tsx) — the composition root. Calls the hooks, threads their results into the sections; holds only pure-UI state (`view`, `dragging`, `canvasRef`) and render-only derivations. No effects.
+- [src/hooks/](src/hooks/) — all stateful/side-effecting logic: `useSettings` (persisted `Settings`), `useTemplate` (slicer template import/persist), `useReliefEngine` (owns the `Engine`, image loading, reactive preview, export/wedge), `useStatus`, `useCanvasPreview`.
+- [src/features/](src/features/) — one folder per app section (`photo`, `print`, `adjust`, `tones`, `filaments`, `template`, `preview`, `plan`, `export`); presentational, driven by props.
+- [src/components/](src/components/) — shared primitives (`Section`, `Slider`, `NumberField`, `Segmented`).
+- [src/lib/](src/lib/) — browser helpers: `platform.ts` (localStorage, file save/pick), `sample.ts` (procedural sample image), `slug.ts`.
 
 ## 3MF export — the subtle part
 
