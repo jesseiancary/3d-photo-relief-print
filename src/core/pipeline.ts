@@ -1,5 +1,5 @@
 import { adjust, quantize, type Gray } from './image'
-import { fixPinches, terraceMesh, type Mesh } from './mesh'
+import { cornerMask, fixPinches, terraceMesh, type Mesh } from './mesh'
 import { planTones, toneLut, type TonePlan } from './tones'
 import type { Settings } from './types'
 
@@ -59,8 +59,11 @@ export function buildMesh(
   rows: number,
   plan: TonePlan,
   pitch: number,
+  cornerPct = 0,
 ): { mesh: Mesh; pinches: number } {
   const { H, zs } = heightsFor(tones, plan)
+  const keep = cornerMask(cols, rows, (cornerPct / 100) * Math.max(cols, rows))
+  if (keep) for (let i = 0; i < H.length; i++) if (!keep[i]) H[i] = 0
   const pinches = fixPinches(H, cols, rows)
   return { mesh: terraceMesh(H, cols, rows, zs, pitch), pinches }
 }

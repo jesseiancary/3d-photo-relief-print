@@ -17,6 +17,8 @@ export interface PrintSettings {
   firstLayerMm: number
   /** mesh grid spacing in mm (size of one "pixel" in the model) */
   pitchMm: number
+  /** corner rounding radius, as a percent (0–10) of the longer footprint dimension */
+  cornerRadius: number
 }
 
 export interface AdjustSettings {

@@ -15,6 +15,43 @@ export interface Mesh {
   triangles: Uint32Array // vertex index triples, CCW seen from outside
 }
 
+/**
+ * Keep-mask for a rounded rectangular footprint: 1 = keep, 0 = drop (a corner cell outside the
+ * quarter-circle). Returns null when radiusCells <= 0 (nothing to round). A cell is dropped when its
+ * centre lies inside a corner square AND farther than radiusCells from that corner's arc centre.
+ * The arc is convex, so the kept region stays simply-connected and monotone-stepped.
+ */
+export function cornerMask(cols: number, rows: number, radiusCells: number): Uint8Array | null {
+  const r = Math.min(radiusCells, cols / 2, rows / 2)
+  if (r <= 0) return null
+  const r2 = r * r
+  const keep = new Uint8Array(cols * rows).fill(1)
+  // arc centres, one per corner, inset by r from each corner of the footprint
+  const arcs = [
+    [r, r],
+    [cols - r, r],
+    [r, rows - r],
+    [cols - r, rows - r],
+  ]
+  for (let y = 0; y < rows; y++) {
+    const cy = y + 0.5
+    for (let x = 0; x < cols; x++) {
+      const cx = x + 0.5
+      for (const [ax, ay] of arcs) {
+        const inX = ax < cols / 2 ? cx < ax : cx > ax
+        const inY = ay < rows / 2 ? cy < ay : cy > ay
+        if (inX && inY) {
+          const dx = cx - ax,
+            dy = cy - ay
+          if (dx * dx + dy * dy > r2) keep[y * cols + x] = 0
+          break
+        }
+      }
+    }
+  }
+  return keep
+}
+
 /** Raise cells until no 2×2 block has two diagonal cells both strictly above the other two. Mutates H. */
 export function fixPinches(H: Uint8Array, cols: number, rows: number): number {
   let changed = 0
@@ -167,6 +204,7 @@ export function terraceMesh(
       const x0 = e[k],
         x1 = e[k + 1],
         h = H[y * cols + x0]
+      if (h === 0) continue // hole: no top face
       const A = slice(S[y], x0, x1) // upper edge (grid y)
       const B = slice(S[y + 1], x0, x1) // lower edge (grid y+1)
       let i = 0,
@@ -210,15 +248,34 @@ export function terraceMesh(
     // borders: E always contains 0 and cols, handled above because cell() is 0 outside
   }
 
-  // bottom: fan from the centre over every perimeter vertex at z=0, CCW-from-above perimeter, faces down
-  const ring: number[] = []
-  for (const x of S[rows]) ring.push(vert(x, rows, 0))
-  for (let y = rows - 1; y >= 0; y--) ring.push(vert(cols, y, 0))
-  for (let k = S[0].length - 2; k >= 0; k--) ring.push(vert(S[0][k], 0, 0))
-  for (let y = 1; y < rows; y++) ring.push(vert(0, y, 0))
-  const c = pos.n / 3
-  pos.push3((cols * pitch) / 2, (rows * pitch) / 2, 0)
-  for (let k = 0; k < ring.length; k++) tri.push3(c, ring[(k + 1) % ring.length], ring[k])
+  // bottom faces: a down-facing cap at z=0 over every occupied cell, mirroring the top-face loop
+  // (reversed winding) over maximal runs of occupied cells so its edges align with the walls.
+  for (let y = 0; y < rows; y++) {
+    let x = 0
+    while (x < cols) {
+      if (H[y * cols + x] === 0) {
+        x++
+        continue
+      }
+      let x1 = x + 1
+      while (x1 < cols && H[y * cols + x1] !== 0) x1++
+      const A = slice(S[y], x, x1) // upper edge (grid y)
+      const B = slice(S[y + 1], x, x1) // lower edge (grid y+1)
+      let i = 0,
+        j = 0
+      while (i < B.length - 1 || j < A.length - 1) {
+        const advB = j === A.length - 1 || (i < B.length - 1 && B[i + 1] <= A[j + 1])
+        if (advB) {
+          tri.push3(vert(A[j], y, 0), vert(B[i + 1], y + 1, 0), vert(B[i], y + 1, 0))
+          i++
+        } else {
+          tri.push3(vert(A[j], y, 0), vert(A[j + 1], y, 0), vert(B[i], y + 1, 0))
+          j++
+        }
+      }
+      x = x1
+    }
+  }
 
   return { positions: pos.done(), triangles: tri.done() }
 }
