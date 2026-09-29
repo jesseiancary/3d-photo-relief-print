@@ -48,6 +48,7 @@ const slug = (s: string) =>
 
 export default function App() {
   const engine = useMemo(() => new Engine(), [])
+  const defs = useMemo(defaultSettings, [])
   const [settings, setSettings] = useState<Settings>(loadSettings)
   const [template, setTemplate] = useState<SlicerTemplate>(loadTemplate)
   const [preview, setPreview] = useState<PreviewResult | null>(null)
@@ -376,6 +377,7 @@ export default function App() {
               max={1.5}
               step={0.05}
               value={settings.adjust.blurMm}
+              defaultValue={defs.adjust.blurMm}
               hint="Median blur at print size. Removes speckle like wall texture; faces keep their edges."
               onChange={(v) => set('adjust', { blurMm: v })}
             />
@@ -386,6 +388,7 @@ export default function App() {
               max={200}
               step={1}
               value={settings.adjust.blackPoint}
+              defaultValue={defs.adjust.blackPoint}
               onChange={(v) =>
                 set('adjust', { blackPoint: Math.min(v, settings.adjust.whitePoint - 10) })
               }
@@ -397,6 +400,7 @@ export default function App() {
               max={255}
               step={1}
               value={settings.adjust.whitePoint}
+              defaultValue={defs.adjust.whitePoint}
               onChange={(v) =>
                 set('adjust', { whitePoint: Math.max(v, settings.adjust.blackPoint + 10) })
               }
@@ -409,6 +413,7 @@ export default function App() {
               max={2.5}
               step={0.05}
               value={settings.adjust.gamma}
+              defaultValue={defs.adjust.gamma}
               hint="Above 1 brightens, below 1 darkens."
               onChange={(v) => set('adjust', { gamma: v })}
             />
@@ -420,6 +425,7 @@ export default function App() {
               max={2}
               step={0.1}
               value={settings.adjust.sharpen}
+              defaultValue={defs.adjust.sharpen}
               onChange={(v) => set('adjust', { sharpen: v })}
             />
           </Section>
@@ -442,6 +448,7 @@ export default function App() {
                 max={MAX_TONES}
                 step={1}
                 value={settings.tones.count}
+                defaultValue={defs.tones.count}
                 onChange={(v) => set('tones', { count: v })}
               />
             ) : (

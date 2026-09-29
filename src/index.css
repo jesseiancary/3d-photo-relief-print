@@ -298,6 +298,30 @@ select {
   align-items: baseline;
   font-size: 13px;
 }
+.slider .slider-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.slider .slider-title:disabled {
+  cursor: default;
+}
+.slider .slider-title .reset-hint {
+  font-size: 11px;
+  color: var(--muted);
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.slider .slider-title:not(:disabled):hover .reset-hint,
+.slider .slider-title:focus-visible .reset-hint {
+  opacity: 1;
+}
 .slider output {
   font-size: 12px;
   color: var(--ink);
