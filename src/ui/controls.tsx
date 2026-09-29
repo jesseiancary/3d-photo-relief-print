@@ -30,6 +30,7 @@ interface SliderProps {
   unit?: string
   digits?: number
   hint?: string
+  defaultValue?: number
   onChange: (v: number) => void
 }
 
@@ -43,12 +44,30 @@ export function Slider({
   unit,
   digits = 0,
   hint,
+  defaultValue,
   onChange,
 }: SliderProps) {
+  const canReset = defaultValue !== undefined && value !== defaultValue
   return (
     <div className="slider">
       <label htmlFor={id}>
-        <span>{label}</span>
+        {defaultValue === undefined ? (
+          <span>{label}</span>
+        ) : (
+          <button
+            type="button"
+            className="slider-title"
+            title="Reset to default"
+            aria-label={`${label} — reset to default`}
+            disabled={!canReset}
+            onClick={() => onChange(defaultValue)}
+          >
+            <span>{label}</span>
+            <span className="reset-hint" aria-hidden="true">
+              Reset to default
+            </span>
+          </button>
+        )}
         <output htmlFor={id} className="num">
           {value.toFixed(digits)}
           {unit && <span className="unit">{unit}</span>}
