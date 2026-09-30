@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Button } from '@/components/Button'
 import { Section } from '@/components/Section'
 import type { TemplateSummary } from '@/core/template'
 
@@ -23,9 +24,9 @@ export function SlicerTemplateSection({
       title="Slicer Template"
       aside={
         isCustom ? (
-          <button type="button" className="link-btn" onClick={onReset}>
+          <Button variant="link" onClick={onReset}>
             Reset
-          </button>
+          </Button>
         ) : undefined
       }
     >
@@ -46,9 +47,7 @@ export function SlicerTemplateSection({
             e.target.value = ''
           }}
         />
-        <button type="button" className="btn" onClick={() => templateRef.current?.click()}>
-          Import Template (.3mf)
-        </button>
+        <Button onClick={() => templateRef.current?.click()}>Import Template (.3mf)</Button>
       </div>
       {tpl.filamentSlots < filamentCount && (
         <p className="status err">

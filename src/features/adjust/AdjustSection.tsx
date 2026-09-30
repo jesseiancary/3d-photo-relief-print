@@ -1,3 +1,4 @@
+import { Button } from '@/components/Button'
 import { Section } from '@/components/Section'
 import { Slider } from '@/components/Slider'
 import type { AdjustSettings } from '@/core/types'
@@ -15,9 +16,9 @@ export function AdjustSection({ adjust, defaults, canAutoLevel, onChange, onAuto
     <Section
       title="Adjust"
       aside={
-        <button type="button" className="link-btn" onClick={onAutoLevels} disabled={!canAutoLevel}>
+        <Button variant="link" onClick={onAutoLevels} disabled={!canAutoLevel}>
           Auto Levels
-        </button>
+        </Button>
       }
     >
       <Slider

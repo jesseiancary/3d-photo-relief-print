@@ -1,3 +1,5 @@
+import { ResettableLabel } from '@/components/ResettableLabel'
+
 interface SliderProps {
   id: string
   label: string
@@ -32,19 +34,11 @@ export function Slider({
         {defaultValue === undefined ? (
           <span>{label}</span>
         ) : (
-          <button
-            type="button"
-            className="slider-title"
-            title="Reset to default"
-            aria-label={`${label} — reset to default`}
-            disabled={!canReset}
-            onClick={() => onChange(defaultValue)}
-          >
-            <span>{label}</span>
-            <span className="reset-hint" aria-hidden="true">
-              Reset to default
-            </span>
-          </button>
+          <ResettableLabel
+            label={label}
+            canReset={canReset}
+            onReset={() => onChange(defaultValue)}
+          />
         )}
         <output htmlFor={id} className="num">
           {value.toFixed(digits)}

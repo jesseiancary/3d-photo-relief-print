@@ -1,4 +1,5 @@
 import type { RefObject } from 'react'
+import { DropZone } from '@/components/DropZone'
 import { Segmented } from '@/components/Segmented'
 import type { TonePlan } from '@/core/tones'
 
@@ -53,19 +54,7 @@ export function PreviewCard({
           </span>
         )}
       </div>
-      <div
-        className={`stage${dragging ? ' over' : ''}`}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault()
-          setDragging(false)
-          onFiles(e.dataTransfer.files)
-        }}
-      >
+      <DropZone className="stage" dragging={dragging} setDragging={setDragging} onFiles={onFiles}>
         {view === 'original' && imageUrl ? (
           <img src={imageUrl} alt="Original" />
         ) : (
@@ -75,7 +64,7 @@ export function PreviewCard({
         {isSample && hasPreview && (
           <span className="sample-tag">Sample Scene · choose a photo to start</span>
         )}
-      </div>
+      </DropZone>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Button } from '@/components/Button'
 import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '@/core/defaults'
 import { autoLayers, type Band } from '@/core/tones'
 import type { Filament, PrintSettings } from '@/core/types'
@@ -90,33 +91,30 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   onChange={(e) => update(i, { name: e.target.value })}
                 />
                 <div className="fil-order">
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label="Move Up"
+                  <Button
+                    variant="icon"
+                    label="Move Up"
                     disabled={i === filaments.length - 1}
                     onClick={() => move(i, 1)}
                   >
                     ↑
-                  </button>
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label="Move Down"
+                  </Button>
+                  <Button
+                    variant="icon"
+                    label="Move Down"
                     disabled={i === 0}
                     onClick={() => move(i, -1)}
                   >
                     ↓
-                  </button>
-                  <button
-                    type="button"
-                    className="icon-btn"
-                    aria-label={`Remove ${f.name}`}
+                  </Button>
+                  <Button
+                    variant="icon"
+                    label={`Remove ${f.name}`}
                     disabled={filaments.length <= MIN_FILAMENTS}
                     onClick={() => remove(i)}
                   >
                     ×
-                  </button>
+                  </Button>
                 </div>
               </div>
               <div className="fil-bottom">
@@ -146,7 +144,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                         min={1}
                         max={25}
                         step={1}
-                        placeholder={`auto ${autoLayers(f.td, print)}`}
+                        placeholder={`${autoLayers(f.td, print)}`}
                         value={f.layers ?? ''}
                         onChange={(e) =>
                           update(i, {
@@ -220,9 +218,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
             />
-            <button type="button" className="btn" onClick={saveProfile}>
-              Save Current
-            </button>
+            <Button onClick={saveProfile}>Save Current</Button>
           </div>
           {profiles.length > 0 && (
             <ul className="profile-list">
@@ -234,21 +230,19 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                     ))}
                   </span>
                   <span className="pname">{p.name}</span>
-                  <button
-                    type="button"
-                    className="link-btn"
+                  <Button
+                    variant="link"
                     onClick={() => saveProfiles(profiles.filter((x) => x.name !== p.name))}
                   >
                     Delete
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
           )}
           <div className="row-actions">
-            <button
-              type="button"
-              className="btn ghost"
+            <Button
+              variant="ghost"
               onClick={() =>
                 saveFile(
                   'filament-profiles.json',
@@ -258,10 +252,9 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               }
             >
               Export JSON
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
+            </Button>
+            <Button
+              variant="ghost"
               onClick={async () => {
                 const text = await pickTextFile('.json,application/json')
                 if (!text) return
@@ -284,7 +277,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               }}
             >
               Import JSON
-            </button>
+            </Button>
           </div>
           <p className="hint">Profiles are kept in this browser only.</p>
         </div>

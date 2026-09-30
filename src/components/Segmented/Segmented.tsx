@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { Button } from '@/components/Button'
 
 export function Segmented<T extends string>({
   label,
@@ -18,16 +19,15 @@ export function Segmented<T extends string>({
         {label}
       </span>
       {options.map((o) => (
-        <button
+        <Button
           key={o.value}
-          type="button"
           role="radio"
           aria-checked={value === o.value}
           className={value === o.value ? 'on' : ''}
           onClick={() => onChange(o.value)}
         >
           {o.label}
-        </button>
+        </Button>
       ))}
     </div>
   )
