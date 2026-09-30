@@ -1,4 +1,5 @@
 import { type ReactNode } from 'react'
+import { ResettableLabel } from '@/components/ResettableLabel'
 
 interface NumberFieldProps {
   id: string
@@ -30,25 +31,17 @@ export function NumberField({
   const canReset = defaultValue !== undefined && value !== defaultValue
   return (
     <div className="field">
-      {defaultValue === undefined ? (
-        <label htmlFor={id}>{label}</label>
-      ) : (
-        <label htmlFor={id}>
-          <button
-            type="button"
-            className="field-title"
-            title="Reset to default"
-            aria-label={`${label} — reset to default`}
-            disabled={!canReset}
-            onClick={() => onChange(defaultValue)}
-          >
-            <span>{label}</span>
-            <span className="reset-hint" aria-hidden="true">
-              Reset to default
-            </span>
-          </button>
-        </label>
-      )}
+      <label htmlFor={id}>
+        {defaultValue === undefined ? (
+          label
+        ) : (
+          <ResettableLabel
+            label={label}
+            canReset={canReset}
+            onReset={() => onChange(defaultValue)}
+          />
+        )}
+      </label>
       <div className="input-unit">
         <input
           id={id}

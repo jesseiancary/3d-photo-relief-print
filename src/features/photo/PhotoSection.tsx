@@ -1,4 +1,6 @@
 import { useRef } from 'react'
+import { Button } from '@/components/Button'
+import { DropZone } from '@/components/DropZone'
 import { Section } from '@/components/Section'
 
 interface Props {
@@ -13,18 +15,11 @@ export function PhotoSection({ isSample, imageName, dragging, setDragging, onFil
   const fileRef = useRef<HTMLInputElement>(null)
   return (
     <Section title="Photo">
-      <div
-        className={`dropzone${dragging ? ' over' : ''}`}
-        onDragOver={(e) => {
-          e.preventDefault()
-          setDragging(true)
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={(e) => {
-          e.preventDefault()
-          setDragging(false)
-          onFiles(e.dataTransfer.files)
-        }}
+      <DropZone
+        className="dropzone"
+        dragging={dragging}
+        setDragging={setDragging}
+        onFiles={onFiles}
       >
         <input
           ref={fileRef}
@@ -37,13 +32,11 @@ export function PhotoSection({ isSample, imageName, dragging, setDragging, onFil
             e.target.value = ''
           }}
         />
-        <button type="button" className="btn" onClick={() => fileRef.current?.click()}>
-          Choose Photo
-        </button>
+        <Button onClick={() => fileRef.current?.click()}>Choose Photo</Button>
         <span className="drop-note">
           {isSample ? 'or drop one here · showing a sample scene' : imageName}
         </span>
-      </div>
+      </DropZone>
     </Section>
   )
 }

@@ -1,3 +1,5 @@
+import { Button } from '@/components/Button'
+
 interface Busy {
   stage: string
   frac: number
@@ -49,26 +51,20 @@ export function ExportCard({
         </div>
       </div>
       <div className="export-actions">
-        <button
-          type="button"
-          className="btn primary"
-          disabled={!!busy || !canExport}
-          onClick={onExport}
-        >
+        <Button variant="primary" disabled={!!busy || !canExport} onClick={onExport}>
           Export 3MF
-        </button>
-        <button
-          type="button"
-          className="btn ghost"
+        </Button>
+        <Button
+          variant="ghost"
           disabled={!!busy || !canExport}
           onClick={onPlainExport}
           title="Geometry only, for other slicers"
         >
           Plain 3MF
-        </button>
-        <button type="button" className="btn ghost" disabled={!!busy} onClick={onWedge}>
+        </Button>
+        <Button variant="ghost" disabled={!!busy} onClick={onWedge}>
           Step Wedge
-        </button>
+        </Button>
       </div>
       {busy && (
         <div
