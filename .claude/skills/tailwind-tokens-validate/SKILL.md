@@ -37,8 +37,8 @@ For each defined token, confirm its name appears in the right `cn.ts` list:
 - `--shadow-<name>` → the `theme.shadow` scale `[...]`.
 
 → **FAIL** if any custom token is missing from its list. Symptom: a `text-<role>`
-is read as a colour and its size is dropped on collision; a `rounded-`/`shadow-`
-override via `className` is silently ignored (both values kept). Colour and
+is read as a color and its size is dropped on collision; a `rounded-`/`shadow-`
+override via `className` is silently ignored (both values kept). Color and
 font-family tokens need no entry — skip them.
 
 ## 2. color-mix tokens survive the build
@@ -77,7 +77,7 @@ grep -rnE 'text-\[|rounded-\[|shadow-\[|bg-\[color-mix' src/components src/featu
 → **PASS** if empty. Each hit is a raw value that should be a token utility
 (`text-caption`, `rounded-control`, `shadow-card`, `bg-primary-wash`) → **FAIL**.
 (A deliberate one-off — e.g. `leading-[1.45]` in `Hint` — is a line-height, not a
-token-shaped colour/size/radius/shadow, so it won't match these patterns.)
+token-shaped color/size/radius/shadow, so it won't match these patterns.)
 
 ## 5. Report
 

@@ -1,7 +1,7 @@
 /**
  * 3MF writer with two modes:
  *  - Bambu project (a template is given): the mesh as a referenced object plus the slicer's own
- *    project_settings.config (recoloured to the stack), model_settings.config, slice_info.config and
+ *    project_settings.config (recolored to the stack), model_settings.config, slice_info.config and
  *    custom_gcode_per_layer.xml (the swaps). The model's Application tag is copied from the template —
  *    Bambu Studio drops ALL config, swaps included, unless that tag reads "BambuStudio-<version>".
  *  - Plain geometry (no template): a bare core-spec 3MF for other slicers, with swap-instructions.txt.

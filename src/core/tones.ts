@@ -1,9 +1,9 @@
 /**
- * Tone model: which colours a stack of filaments can produce at each layer height, which heights we print,
+ * Tone model: which colors a stack of filaments can produce at each layer height, which heights we print,
  * and where the filament swaps go.
  *
  * Stack model (HueForge-style approximation): the first filament is the base and is treated as opaque.
- * Each later filament is a "band" of layers. A layer of thickness d of filament f over colour c gives
+ * Each later filament is a "band" of layers. A layer of thickness d of filament f over color c gives
  *   c' = c·(1−a) + f·a,   a = min(1, d / (TD × 0.1 mm))
  * blended in linear light. So a filament reaches full coverage at ≈ TD/10 mm. It is an approximation —
  * the step wedge exists to check it against real prints.
@@ -68,7 +68,7 @@ const toLin = (c: number) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) *
 const toSrgb = (c: number) => (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055)
 export const linToSrgb = (c: RGB): RGB => [toSrgb(c[0]), toSrgb(c[1]), toSrgb(c[2])]
 
-/** CIE L* of a linear-light RGB colour */
+/** CIE L* of a linear-light RGB color */
 export function lstarLin(c: RGB): number {
   const Y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
   return Y > 216 / 24389 ? 116 * Math.cbrt(Y) - 16 : (24389 / 27) * Y
@@ -104,8 +104,8 @@ export function buildBands(filaments: Filament[], p: PrintSettings): Band[] {
   return bands
 }
 
-/** simulated linear-light colour looking down at a column printed up to height z */
-export function stackColourLin(z: number, bands: Band[], filaments: Filament[]): RGB {
+/** simulated linear-light color looking down at a column printed up to height z */
+export function stackColorLin(z: number, bands: Band[], filaments: Filament[]): RGB {
   const base = hexToRgb(filaments[0].color).map(toLin) as RGB
   let c: RGB = [...base]
   for (let k = 1; k < bands.length; k++) {
@@ -124,7 +124,7 @@ export function planTones(filaments: Filament[], p: PrintSettings, t: ToneSettin
   const bands = buildBands(filaments, p)
   const mk = (layer: number): Level => {
     const z = layerTop(layer, p)
-    const lin = stackColourLin(z, bands, filaments)
+    const lin = stackColorLin(z, bands, filaments)
     return { layer, z, rgb: linToSrgb(lin), L: lstarLin(lin) }
   }
   const candidates: Level[] = [mk(bands[0].lastLayer)]

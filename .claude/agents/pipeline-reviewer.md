@@ -29,15 +29,15 @@ The mesh must be one watertight solid built from the tone grid:
 
 ### Tones — [src/core/tones.ts](../../src/core/tones.ts)
 
-- First filament is an opaque base; each later filament is a band blending toward its colour (full coverage ≈ TD × 0.1 mm).
+- First filament is an opaque base; each later filament is a band blending toward its color (full coverage ≈ TD × 0.1 mm).
 - Heights are chosen so simulated tones are **evenly spaced in CIE L\*** (monotonic L\* ordering), not linearly in height.
 - Swap layers are derived correctly from the chosen heights and are physically valid (ascending, within the layer count).
 - Graphic mode = exactly one opaque tone per filament.
 
 ### 3MF export — [src/core/threemf.ts](../../src/core/threemf.ts) + [src/core/template.ts](../../src/core/template.ts)
 
-- **Bambu project mode** reuses a real slicer template _verbatim_ except the first N filament slots (recoloured) and layer heights. Config must not be synthesised.
-- Model `Application` tag must read `BambuStudio-<version>` — otherwise Bambu Studio drops all config, including colour swaps.
+- **Bambu project mode** reuses a real slicer template _verbatim_ except the first N filament slots (recolored) and layer heights. Config must not be synthesised.
+- Model `Application` tag must read `BambuStudio-<version>` — otherwise Bambu Studio drops all config, including color swaps.
 - `[Content_Types].xml` must **not** declare `project_settings.config` as `application/xml` (the loader would XML-parse JSON and silently drop config).
 - **Plain-geometry mode** still emits valid core-spec 3MF plus `swap-instructions.txt`.
 

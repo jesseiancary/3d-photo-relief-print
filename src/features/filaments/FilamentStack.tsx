@@ -84,7 +84,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   className="swatch-input"
                   type="color"
                   value={f.color.length === 7 ? f.color : '#888888'}
-                  aria-label={`${f.name} colour`}
+                  aria-label={`${f.name} color`}
                   onChange={(e) => update(i, { color: e.target.value.toUpperCase() })}
                 />
                 <input
@@ -195,7 +195,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               {p.name}
             </option>
           ))}
-          <option value={-1}>Accent colour</option>
+          <option value={-1}>Accent color</option>
         </select>
       </div>
 

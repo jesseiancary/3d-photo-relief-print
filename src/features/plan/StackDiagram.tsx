@@ -63,8 +63,8 @@ export function StackDiagram({
         ))}
       </div>
       <figcaption className="text-caption text-muted">
-        Each column is one printed tone in cross-section: its height in mm, the colour it should
-        read as from the front, and how much of the image uses it.
+        Each column is one printed tone in cross-section: its height in mm, the color it should read
+        as from the front, and how much of the image uses it.
       </figcaption>
     </figure>
   )
