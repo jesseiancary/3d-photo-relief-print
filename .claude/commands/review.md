@@ -54,6 +54,7 @@ This is a browser-only tool (no backend, no auth, no network). The checklist ref
 - [ ] Inputs have labels; interactive elements are focusable with visible focus states
 - [ ] Slider drags stay responsive (previews don't back up)
 - [ ] Loading/empty/error states handled (not a blank screen)
+- [ ] Design system intact — consume token utilities (no scattered raw values), type roles used alone, new `--text`/`--radius`/`--shadow` tokens registered in [cn.ts](../../src/lib/cn.ts), `color-mix` tokens out of `@theme inline`. For non-trivial styling changes run the `tailwind-tokens-validate` skill or the `design-system-reviewer` agent.
 
 ### Git
 

@@ -1,3 +1,4 @@
+import { Hint } from '@/components/Hint'
 import { Section } from '@/components/Section'
 import { Segmented } from '@/components/Segmented'
 import { Slider } from '@/components/Slider'
@@ -35,9 +36,9 @@ export function TonesSection({ tones, defaults, filamentCount, onChange }: Props
           onChange={(v) => onChange({ count: v })}
         />
       ) : (
-        <p className="hint">
+        <Hint>
           Each filament printed fully opaque: a crisp poster look with {filamentCount} tones.
-        </p>
+        </Hint>
       )}
     </Section>
   )

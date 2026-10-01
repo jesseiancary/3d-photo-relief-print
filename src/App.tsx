@@ -1,4 +1,6 @@
 import { useRef, useState } from 'react'
+import { Hint } from '@/components/Hint'
+import { Panel } from '@/components/Panel'
 import { baseLayers, layerTop } from '@/core/tones'
 import { AdjustSection, computeAutoLevels } from '@/features/adjust'
 import { ExportCard } from '@/features/export'
@@ -45,21 +47,21 @@ export default function App() {
     )
 
   return (
-    <div className="app">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
+    <div className="mx-auto max-w-360 px-4 pb-12">
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pb-4 pt-4.5">
+        <div className="flex items-center gap-2.5">
+          <span className="grid w-5.5 gap-0.5" aria-hidden="true">
+            <i className="block h-1.25 w-3/5 rounded-[1px] bg-[#f4f4f2] shadow-ring" />
+            <i className="block h-1.25 w-4/5 rounded-[1px] bg-[#a8abb0]" />
+            <i className="block h-1.25 w-full rounded-[1px] bg-[#161616]" />
           </span>
-          <h1>Photo Relief</h1>
+          <h1 className="m-0 font-display text-title">Photo Relief</h1>
         </div>
-        <p className="tagline">Photo in, layered filament relief out.</p>
+        <p className="m-0 text-muted">Photo in, layered filament relief out.</p>
       </header>
 
-      <main className="layout">
-        <aside className="controls" aria-label="Settings">
+      <main className="grid grid-cols-1 items-start gap-5 side:grid-cols-[minmax(300px,370px)_minmax(0,1fr)]">
+        <aside className="grid gap-3" aria-label="Settings">
           <PhotoSection
             isSample={engine.isSample}
             imageName={engine.imageName}
@@ -110,7 +112,10 @@ export default function App() {
           />
         </aside>
 
-        <section className="workspace" aria-label="Preview and Export">
+        <section
+          className="grid min-w-0 gap-3.5 max-side:-order-1 side:sticky side:top-[calc(env(safe-area-inset-top,0px)+12px)]"
+          aria-label="Preview and Export"
+        >
           <PreviewCard
             view={view}
             setView={setView}
@@ -127,27 +132,30 @@ export default function App() {
           />
 
           {warnings.length > 0 && (
-            <ul className="warnings" aria-live="polite">
+            <ul className="m-0 grid list-none gap-1.5 p-0" aria-live="polite">
               {warnings.map((w) => (
-                <li key={w}>{w}</li>
+                <li
+                  key={w}
+                  className="rounded-control bg-warn-bg px-3 py-2 text-body text-warn-ink"
+                >
+                  {w}
+                </li>
               ))}
             </ul>
           )}
 
           {plan && preview && (
-            <div className="plan-grid">
-              <div className="panel">
-                <h3>Tones</h3>
+            <div className="grid grid-cols-1 gap-3.5 wide:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+              <Panel title="Tones">
                 <StackDiagram plan={plan} filaments={settings.filaments} counts={preview.counts} />
-              </div>
-              <div className="panel">
-                <h3>Filament Swaps</h3>
+              </Panel>
+              <Panel title="Filament Swaps">
                 <SwapTable plan={plan} filaments={settings.filaments} />
-                <p className="hint num">
+                <Hint className="num">
                   Slicer: {p.layerMm} mm layers · {p.firstLayerMm} mm first layer · 100% infill · 1
                   wall
-                </p>
-              </div>
+                </Hint>
+              </Panel>
             </div>
           )}
 

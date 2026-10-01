@@ -1,3 +1,4 @@
+import { Hint } from '@/components/Hint'
 import { ResettableLabel } from '@/components/ResettableLabel'
 
 interface SliderProps {
@@ -29,8 +30,8 @@ export function Slider({
 }: SliderProps) {
   const canReset = defaultValue !== undefined && value !== defaultValue
   return (
-    <div className="slider">
-      <label htmlFor={id}>
+    <div className="grid gap-0.5">
+      <label htmlFor={id} className="flex items-baseline justify-between text-label">
         {defaultValue === undefined ? (
           <span>{label}</span>
         ) : (
@@ -40,9 +41,9 @@ export function Slider({
             onReset={() => onChange(defaultValue)}
           />
         )}
-        <output htmlFor={id} className="num">
+        <output htmlFor={id} className="num text-caption text-foreground">
           {value.toFixed(digits)}
-          {unit && <span className="unit">{unit}</span>}
+          {unit && <span className="text-muted">{unit}</span>}
         </output>
       </label>
       <input
@@ -53,8 +54,9 @@ export function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        className="my-1 h-5 w-full accent-primary"
       />
-      {hint && <p className="hint">{hint}</p>}
+      {hint && <Hint>{hint}</Hint>}
     </div>
   )
 }

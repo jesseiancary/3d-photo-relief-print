@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/Button'
+import { Hint } from '@/components/Hint'
 import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '@/core/defaults'
 import { autoLayers, type Band } from '@/core/tones'
 import type { Filament, PrintSettings } from '@/core/types'
@@ -67,14 +68,17 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
   const rows = filaments.map((f, i) => ({ f, i })).reverse() // top of the print first
 
   return (
-    <div className="stack-editor">
-      <ol className="filaments">
+    <div className="grid gap-2.5">
+      <ol className="m-0 grid list-none gap-1.5 p-0">
         {rows.map(({ f, i }) => {
           const b = bands?.[i]
           const isBase = i === 0
           return (
-            <li key={f.id} className="filament">
-              <div className="fil-top">
+            <li
+              key={f.id}
+              className="grid gap-1.5 rounded-control border border-line bg-surface-2 p-2"
+            >
+              <div className="flex items-center gap-1.5">
                 <input
                   id={`fil-color-${f.id}`}
                   className="swatch-input"
@@ -85,12 +89,12 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                 />
                 <input
                   id={`fil-name-${f.id}`}
-                  className="fil-name"
+                  className="grow bg-surface! font-medium"
                   value={f.name}
                   aria-label="Filament Name"
                   onChange={(e) => update(i, { name: e.target.value })}
                 />
-                <div className="fil-order">
+                <div className="flex flex-none">
                   <Button
                     variant="icon"
                     label="Move Up"
@@ -117,8 +121,8 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   </Button>
                 </div>
               </div>
-              <div className="fil-bottom">
-                <label className="mini">
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="flex items-center gap-1.25 text-caption text-muted">
                   <span>TD</span>
                   <input
                     id={`fil-td-${f.id}`}
@@ -127,16 +131,19 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                     max={50}
                     step={0.1}
                     value={f.td}
+                    className="h-7 w-18 bg-surface font-mono"
                     onChange={(e) =>
                       update(i, { td: Math.max(0.1, Number(e.target.value) || 0.1) })
                     }
                   />
                 </label>
                 {isBase ? (
-                  <span className="band-note">Base · layers 1–{b?.lastLayer ?? '–'}</span>
+                  <span className="ml-auto text-caption text-muted">
+                    Base · layers 1–{b?.lastLayer ?? '–'}
+                  </span>
                 ) : (
                   <>
-                    <label className="mini">
+                    <label className="flex items-center gap-1.25 text-caption text-muted">
                       <span>Layers</span>
                       <input
                         id={`fil-layers-${f.id}`}
@@ -146,6 +153,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                         step={1}
                         placeholder={`${autoLayers(f.td, print)}`}
                         value={f.layers ?? ''}
+                        className="h-7 w-18 bg-surface font-mono"
                         onChange={(e) =>
                           update(i, {
                             layers:
@@ -157,7 +165,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                       />
                     </label>
                     {b && (
-                      <span className="band-note num">
+                      <span className="num ml-auto text-caption text-muted">
                         L{b.firstLayer}–{b.lastLayer} · {b.bottomZ.toFixed(2)}–{b.topZ.toFixed(2)}{' '}
                         mm
                       </span>
@@ -170,10 +178,11 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
         })}
       </ol>
 
-      <div className="row-actions">
+      <div className="flex flex-wrap gap-2">
         <select
           id="add-filament"
           aria-label="Add Filament"
+          className="grow basis-40"
           value=""
           disabled={filaments.length >= MAX_FILAMENTS}
           onChange={(e) => add(Number(e.target.value))}
@@ -190,13 +199,16 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
         </select>
       </div>
 
-      <details className="profiles">
-        <summary>Filament Profiles</summary>
-        <div className="profiles-body">
-          <div className="row-actions">
+      <details>
+        <summary className="cursor-pointer text-body font-medium text-foreground">
+          Filament Profiles
+        </summary>
+        <div className="mt-2.5 grid gap-2.5">
+          <div className="flex flex-wrap gap-2">
             <select
               id="load-profile"
               aria-label="Load Profile"
+              className="grow basis-40"
               value=""
               disabled={!profiles.length}
               onChange={(e) => loadProfile(e.target.value)}
@@ -211,25 +223,30 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               ))}
             </select>
           </div>
-          <div className="row-actions">
+          <div className="flex flex-wrap gap-2">
             <input
               id="profile-name"
               placeholder="Profile Name"
+              className="grow basis-40"
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
             />
             <Button onClick={saveProfile}>Save Current</Button>
           </div>
           {profiles.length > 0 && (
-            <ul className="profile-list">
+            <ul className="m-0 grid list-none gap-1 p-0">
               {profiles.map((p) => (
-                <li key={p.name}>
-                  <span className="dots">
+                <li key={p.name} className="flex items-center gap-2 text-body">
+                  <span className="inline-flex gap-0.5">
                     {p.filaments.map((f, k) => (
-                      <i key={k} style={{ background: f.color }} />
+                      <i
+                        key={k}
+                        className="inline-block h-2.5 w-2.5 rounded-full shadow-swatch"
+                        style={{ background: f.color }}
+                      />
                     ))}
                   </span>
-                  <span className="pname">{p.name}</span>
+                  <span className="min-w-0 flex-1 wrap-anywhere">{p.name}</span>
                   <Button
                     variant="link"
                     onClick={() => saveProfiles(profiles.filter((x) => x.name !== p.name))}
@@ -240,7 +257,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               ))}
             </ul>
           )}
-          <div className="row-actions">
+          <div className="flex flex-wrap gap-2">
             <Button
               variant="ghost"
               onClick={() =>
@@ -279,7 +296,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
               Import JSON
             </Button>
           </div>
-          <p className="hint">Profiles are kept in this browser only.</p>
+          <Hint>Profiles are kept in this browser only.</Hint>
         </div>
       </details>
     </div>

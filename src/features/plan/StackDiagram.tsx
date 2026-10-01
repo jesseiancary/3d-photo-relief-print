@@ -20,12 +20,18 @@ export function StackDiagram({
     .sort((a, b) => a.t.z - b.t.z)
   const zMax = plan.maxZ
   return (
-    <figure className="stack-figure">
-      <div className="columns" style={{ ['--cols' as string]: order.length }}>
+    <figure className="m-0 grid gap-2">
+      <div
+        className="grid h-42.5 items-end gap-1.5 overflow-x-auto grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
+        style={{ ['--cols' as string]: order.length }}
+      >
         {order.map(({ t, share }) => (
-          <div className="col" key={t.z}>
+          <div
+            className="grid h-full min-w-6.5 justify-items-center gap-0.75 grid-rows-[1fr_auto_auto_auto]"
+            key={t.z}
+          >
             <div
-              className="col-bar"
+              className="flex w-full max-w-10 flex-col-reverse self-end overflow-hidden rounded-t-xs shadow-ring"
               style={{ height: `${(t.z / zMax) * 100}%` }}
               title={`${t.z.toFixed(2)} mm`}
             >
@@ -36,6 +42,7 @@ export function StackDiagram({
                 return (
                   <span
                     key={b.filament}
+                    className="block w-full"
                     style={{
                       height: `${(h / t.z) * 100}%`,
                       background: filaments[b.filament]?.color,
@@ -44,15 +51,18 @@ export function StackDiagram({
                 )
               })}
             </div>
-            <span className="col-swatch" style={{ background: css(t.rgb) }} />
-            <span className="col-z num">{t.z.toFixed(2)}</span>
-            <span className="col-share num">
+            <span
+              className="h-4 w-full max-w-10 rounded-sm shadow-swatch"
+              style={{ background: css(t.rgb) }}
+            />
+            <span className="num text-caption">{t.z.toFixed(2)}</span>
+            <span className="num text-caption text-muted">
               {share < 0.0005 ? '–' : `${(share * 100).toFixed(share < 0.1 ? 1 : 0)}%`}
             </span>
           </div>
         ))}
       </div>
-      <figcaption>
+      <figcaption className="text-caption text-muted">
         Each column is one printed tone in cross-section: its height in mm, the colour it should
         read as from the front, and how much of the image uses it.
       </figcaption>
