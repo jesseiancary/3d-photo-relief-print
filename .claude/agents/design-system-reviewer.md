@@ -29,8 +29,8 @@ exact traps below.
 utility prefix with a default are mis-merged unless registered in `cn()`:
 
 - **Every custom `--text-<role>`** in index.css must be in the `font-size`
-  `text: [...]` group — otherwise it's read as a text _colour_ and the size is
-  silently dropped when it collides with a colour utility.
+  `text: [...]` group — otherwise it's read as a text _color_ and the size is
+  silently dropped when it collides with a color utility.
 - **Every custom `--radius-<name>`** (beyond the default `sm`) must be in the
   `rounded: [...]` group — otherwise it never collides and a `className` radius
   override silently fails (both radii kept).
@@ -38,20 +38,20 @@ utility prefix with a default are mis-merged unless registered in `cn()`:
   trap: the default shadow scale is t-shirt sizes only, so a `className` shadow
   override keeps _both_ shadows.
 - Flag any token defined in index.css's `@theme` blocks that is missing from its
-  matching `cn.ts` list. (Font-family and colour tokens need no entry — the
-  colour scale is `isAny`.)
+  matching `cn.ts` list. (Font-family and color tokens need no entry — the
+  color scale is `isAny`.)
 
 ### Tokens & themeing — [src/index.css](../../src/index.css)
 
-- **`color-mix()` tokens must NOT live in `@theme inline`.** The inline colour
-  parser extracts only the base colour and silently discards the mix (e.g.
+- **`color-mix()` tokens must NOT live in `@theme inline`.** The inline color
+  parser extracts only the base color and silently discards the mix (e.g.
   `bg-primary-wash` compiling to an opaque `var(--accent-fill)`). They belong in
   the plain `@theme {…}` block. Confirm the built CSS still contains `color-mix`.
 - **Hand-written CSS must be layered** — element/base rules in `@layer base {…}`,
   reusable classes in `@layer components {…}`, custom utilities via `@utility`.
   Unlayered CSS outranks `@layer utilities` and silently beats Tailwind utilities
   on that element.
-- **Tokens are for _systemic_ decisions only** — colours, type roles, radii,
+- **Tokens are for _systemic_ decisions only** — colors, type roles, radii,
   shadows, breakpoints. One-off layout numbers stay plain utilities, not tokens.
 
 ### Primitives — [src/components/](../../src/components/)
@@ -59,7 +59,7 @@ utility prefix with a default are mis-merged unless registered in `cn()`:
 - A component's look stays in token utilities (a `variant → classes` map merged
   with `cn()`), so features don't re-decide it. `className` is merged **last** so
   callers can override.
-- No raw colours/sizes/radii/shadows — consume the token utilities (`bg-primary`,
+- No raw colors/sizes/radii/shadows — consume the token utilities (`bg-primary`,
   `rounded-control`, `shadow-card`, `text-caption`, `text-muted`).
 
 ### Type as roles

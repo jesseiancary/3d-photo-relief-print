@@ -4,12 +4,12 @@ description: >-
   Validate a produced .3mf file against the Bambu Studio loader rules that this
   project must satisfy — the Application tag, the [Content_Types].xml
   declaration, and the presence of project_settings.config. Use after changing
-  the 3MF export path or when a slicer silently drops config/colours on import.
+  the 3MF export path or when a slicer silently drops config/colors on import.
 ---
 
 # Validate a 3MF export
 
-A `.3mf` is a ZIP. Bambu Studio silently drops config (including colour swaps)
+A `.3mf` is a ZIP. Bambu Studio silently drops config (including color swaps)
 when a few specific things are wrong — see
 [docs/bambu-3mf-export.md](../../../docs/bambu-3mf-export.md) for the full rules.
 This skill is the repeatable check for those failure modes.
@@ -60,7 +60,7 @@ For each, PASS/FAIL. All must pass for Bambu Studio to keep config.
   unzip -p "$OUT/model.3mf" Metadata/project_settings.config | head -c 200
   ```
 
-  → must be valid JSON (starts with `{`). Confirm the first N filament slots are recoloured to the chosen filaments and layer heights match the print settings. Pipe to `node -e 'JSON.parse(require("fs").readFileSync(0))'` to assert it parses.
+  → must be valid JSON (starts with `{`). Confirm the first N filament slots are recolored to the chosen filaments and layer heights match the print settings. Pipe to `node -e 'JSON.parse(require("fs").readFileSync(0))'` to assert it parses.
 
 - **Geometry is manifold** — bad-edge count from the CLI run in step 1 must be `0`.
 
@@ -71,5 +71,5 @@ For each, PASS/FAIL. All must pass for Bambu Studio to keep config.
 
 State each check as PASS/FAIL with the offending line quoted on failure, and map
 any FAIL back to its symptom in the slicer (e.g. "Application tag generic →
-Bambu Studio imports geometry but no colours/config"). If all pass, say the file
+Bambu Studio imports geometry but no colors/config"). If all pass, say the file
 should import with config intact.

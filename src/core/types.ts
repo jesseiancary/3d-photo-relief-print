@@ -1,7 +1,7 @@
 export interface Filament {
   id: string
   name: string
-  /** display colour, #rrggbb */
+  /** display color, #rrggbb */
   color: string
   /** HueForge-style transmission distance */
   td: number

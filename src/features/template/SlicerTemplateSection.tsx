@@ -59,7 +59,7 @@ export function SlicerTemplateSection({
       <Hint>
         The Bambu export reuses a project you saved from your slicer, so the settings match your
         printer exactly. Save one with your printer, a 0.08 mm process, 100% infill and 1 wall, then
-        import it here. Only the filament colours and layer height are changed per export.
+        import it here. Only the filament colors and layer height are changed per export.
       </Hint>
     </Section>
   )

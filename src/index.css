@@ -17,9 +17,9 @@
 }
 
 /* Photo Relief — tokens: cool print-shop greys, textured-PEI gold accent.
-   Colours use light-dark() so each token carries both themes on one line; the used value
+   Colors use light-dark() so each token carries both themes on one line; the used value
    follows `color-scheme`, which tracks the OS preference and is pinned by the `data-theme`
-   overrides below. `--shadow` is not a colour, so it can't ride light-dark() and is themed
+   overrides below. `--shadow` is not a color, so it can't ride light-dark() and is themed
    separately. */
 :root {
   color-scheme: light dark;
@@ -55,7 +55,7 @@
   color-scheme: dark;
 }
 
-/* --shadow isn't a colour, so it can't ride light-dark(); override it for dark following the
+/* --shadow isn't a color, so it can't ride light-dark(); override it for dark following the
    same selector logic as the tokens (OS dark unless forced light, plus forced dark). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
@@ -95,7 +95,7 @@
   --font-mono: var(--mono);
 
   /* type roles → each bundles size + weight (+ line-height / tracking) so a role is used
-     alone; only orthogonal bits (uppercase, colour, font-display) are composed on top. */
+     alone; only orthogonal bits (uppercase, color, font-display) are composed on top. */
   --text-title: 22px; /* brand / display heading */
   --text-title--line-height: 1;
   --text-title--font-weight: 700;
@@ -117,7 +117,7 @@
   /* shadows → shadow-card / shadow-ring / shadow-swatch / shadow-stage */
   --shadow-card: var(--shadow); /* elevation: cards/panels/preview */
   --shadow-ring: 0 0 0 1px var(--line-strong); /* 1px hairline border-ring */
-  --shadow-swatch: inset 0 0 0 1px rgb(128 128 128 / 0.5); /* hairline for colour dots/swatches */
+  --shadow-swatch: inset 0 0 0 1px rgb(128 128 128 / 0.5); /* hairline for color dots/swatches */
   --shadow-stage: 0 2px 12px rgb(0 0 0 / 0.25); /* soft drop for the preview image/canvas */
 
   /* layout breakpoints → side: (two-column controls/preview), wide: (two-column plan) */
@@ -125,8 +125,8 @@
   --breakpoint-wide: 1100px;
 }
 
-/* Derived colour tints. These are NOT `inline`: `@theme inline` parses a colour value
-   and would discard the color-mix (keeping only the base colour), so they must emit as
+/* Derived color tints. These are NOT `inline`: `@theme inline` parses a color value
+   and would discard the color-mix (keeping only the base color), so they must emit as
    real custom properties the utilities reference. They still theme via the nested var(). */
 @theme {
   --color-primary-wash: color-mix(
@@ -160,7 +160,7 @@
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }
-  /* Shared input/select defaults; tokens drive every colour. */
+  /* Shared input/select defaults; tokens drive every color. */
   input[type='number'],
   input:not([type]),
   input[type='text'],
@@ -193,7 +193,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Native colour picker: a component class, since the swatch box needs -webkit
+/* Native color picker: a component class, since the swatch box needs -webkit
    pseudo-elements that utilities can't reach. */
 @layer components {
   .swatch-input {

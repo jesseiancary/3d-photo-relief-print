@@ -30,7 +30,7 @@ This is a browser-only tool (no backend, no auth, no network). The checklist ref
 ### 3MF Export (the subtle part)
 
 - [ ] Read `docs/bambu-3mf-export.md` before changing 3MF output
-- [ ] Bambu project mode reuses a real slicer template verbatim except recoloured filament slots + layer heights
+- [ ] Bambu project mode reuses a real slicer template verbatim except recolored filament slots + layer heights
 - [ ] Model `Application` tag reads `BambuStudio-<version>` (else Bambu Studio drops config)
 - [ ] `[Content_Types].xml` does NOT declare `project_settings.config` as `application/xml`
 - [ ] Plain-geometry mode still emits valid core-spec 3MF + `swap-instructions.txt`

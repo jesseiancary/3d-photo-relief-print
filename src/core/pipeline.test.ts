@@ -56,7 +56,7 @@ describe('end to end', () => {
     expect(strFromU8(files['[Content_Types].xml'])).not.toContain('project_settings.config')
     const object = strFromU8(files['3D/Objects/object_1.model'])
     expect((object.match(/<triangle /g) ?? []).length).toBe(mesh.triangles.length / 3)
-    // project config is the template recoloured to our stack, with our layer height
+    // project config is the template recolored to our stack, with our layer height
     const cfg = JSON.parse(strFromU8(files['Metadata/project_settings.config']))
     expect(cfg.filament_colour.slice(0, s.filaments.length)).toEqual(
       s.filaments.map((f) => f.color.toUpperCase()),

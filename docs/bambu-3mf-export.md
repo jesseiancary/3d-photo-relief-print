@@ -8,7 +8,7 @@ slicer's loader, not by the 3MF spec, so they aren't obvious from the file forma
 
 A 3MF can carry a whole slicer project under `Metadata/` — `project_settings.config` (printer/print/
 filament settings), `slice_info.config`, and `custom_gcode_per_layer.xml` (the **filament swaps** that
-make a layered relief print in colour). Bambu Studio will **ignore all of it** unless one condition is
+make a layered relief print in color). Bambu Studio will **ignore all of it** unless one condition is
 met:
 
 > The model's `<metadata name="Application">` tag in `3D/3dmodel.model` must start with
@@ -41,7 +41,7 @@ names the right presets) is not enough; the loader still rejects it. We tried:
 So the app doesn't generate config. It reuses a **slicer template**: a real project the user saved once
 from their slicer (`File → Save Project`). At export we change only what depends on the photo:
 
-- recolour the first N filament slots to the stack (`filament_colour`),
+- recolor the first N filament slots to the stack (`filament_colour`),
 - set `layer_height` / `initial_layer_print_height` to ours so the swap heights land on layer
   boundaries,
 - copy the template's `Application` tag onto the model.
@@ -63,7 +63,7 @@ panel; `parseTemplate()` extracts the config + Application tag from any saved pr
   so writing `layer_height` / `initial_layer_print_height` into the config isn't enough on its
   own; they must also be added to that array's **process slot (index 0)**. The array is
   `[process, filament×N, printer]`. `projectConfigFor()` registers our two layer-height keys
-  there. (Filament colours are exempt — Bambu applies `filament_colour` as a project/extruder
+  there. (Filament colors are exempt — Bambu applies `filament_colour` as a project/extruder
   assignment that survives without an override entry.)
 - **`[Content_Types].xml` must not declare `project_settings.config` as `application/xml`.** It's JSON.
   If declared as XML, the loader XML-parses JSON, fails, and drops all config — same "geometry only"
@@ -77,7 +77,7 @@ panel; `parseTemplate()` extracts the config + Application tag from any saved pr
 ## Two export modes
 
 - **Bambu project** (`write3mf` with a `template`): the mesh as a referenced object plus the template's
-  config (recoloured), `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml`.
+  config (recolored), `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml`.
   Opens in Bambu Studio / OrcaSlicer ready to slice with the swaps loaded.
 - **Plain geometry** (`write3mf` with `template: null`): a bare core-spec 3MF plus
   `swap-instructions.txt`, for any other slicer (PrusaSlicer, Cura, …).

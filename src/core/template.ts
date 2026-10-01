@@ -4,7 +4,7 @@
  * accepts: the loader ignores config unless the model's Application tag names the slicer (e.g.
  * "BambuStudio-02.08.02.61"), and the project config must be the slicer's own complete, versioned
  * schema. We can't synthesise that, so we carry a template and change only the filament-dependent
- * bits (colours) plus the layer height at export time.
+ * bits (colors) plus the layer height at export time.
  */
 import { strFromU8, unzipSync } from 'fflate'
 import defaultTemplate from './defaultTemplate.json'
@@ -68,7 +68,7 @@ export function parseTemplate(bytes: Uint8Array): SlicerTemplate {
 
 /**
  * project_settings.config for an export: the template's config with the first N filament slots
- * recoloured to the stack and the layer height forced to ours (so the swap heights land on layer
+ * recolored to the stack and the layer height forced to ours (so the swap heights land on layer
  * boundaries). Slots beyond the stack are left as the template had them (unused by the print).
  */
 export function projectConfigFor(
@@ -78,11 +78,11 @@ export function projectConfigFor(
 ): { text: string; warning?: string } {
   const c: Record<string, unknown> = { ...t.config }
   const slots = Array.isArray(c.filament_colour) ? (c.filament_colour as string[]).length : 0
-  const colour = Array.isArray(c.filament_colour) ? [...(c.filament_colour as string[])] : []
+  const color = Array.isArray(c.filament_colour) ? [...(c.filament_colour as string[])] : []
   filaments.forEach((f, i) => {
-    if (i < colour.length) colour[i] = f.color.toUpperCase()
+    if (i < color.length) color[i] = f.color.toUpperCase()
   })
-  c.filament_colour = colour
+  c.filament_colour = color
   c.layer_height = String(p.layerMm)
   c.initial_layer_print_height = String(p.firstLayerMm)
   // Bambu reloads the named process preset on import and only honours keys listed in
@@ -98,7 +98,7 @@ export function projectConfigFor(
   c.different_settings_to_system = diffs
   const warning =
     filaments.length > slots
-      ? `The stack has ${filaments.length} filaments but the template has ${slots} slots. Save a template with at least ${filaments.length} filaments and import it, or the extra colours won't be set.`
+      ? `The stack has ${filaments.length} filaments but the template has ${slots} slots. Save a template with at least ${filaments.length} filaments and import it, or the extra colors won't be set.`
       : undefined
   return { text: JSON.stringify(c), warning }
 }
