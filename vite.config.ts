@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'node:url'
+import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { viteSingleFile } from 'vite-plugin-singlefile'
@@ -6,7 +7,8 @@ import { viteSingleFile } from 'vite-plugin-singlefile'
 // `npm run build` -> normal multi-file build in dist/
 // `npm run build:single` -> one self-contained dist-single/index.html (worker inlined)
 export default defineConfig(({ mode }) => ({
-  plugins: mode === 'single' ? [react(), viteSingleFile()] : [react()],
+  plugins:
+    mode === 'single' ? [react(), tailwindcss(), viteSingleFile()] : [react(), tailwindcss()],
   base: './',
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   worker: { format: 'es' },

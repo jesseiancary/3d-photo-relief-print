@@ -16,7 +16,8 @@ export function PhotoSection({ isSample, imageName, dragging, setDragging, onFil
   return (
     <Section title="Photo">
       <DropZone
-        className="dropzone"
+        className="flex flex-wrap items-center gap-2.5 rounded-card border-[1.5px] border-dashed border-line-strong p-3"
+        activeClassName="border-primary bg-primary-wash"
         dragging={dragging}
         setDragging={setDragging}
         onFiles={onFiles}
@@ -33,7 +34,7 @@ export function PhotoSection({ isSample, imageName, dragging, setDragging, onFil
           }}
         />
         <Button onClick={() => fileRef.current?.click()}>Choose Photo</Button>
-        <span className="drop-note">
+        <span className="min-w-0 wrap-anywhere text-caption text-muted">
           {isSample ? 'or drop one here · showing a sample scene' : imageName}
         </span>
       </DropZone>

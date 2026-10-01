@@ -10,12 +10,12 @@ export function Section({
   children: ReactNode
 }) {
   return (
-    <section className="section">
-      <header className="section-head">
-        <h2>{title}</h2>
+    <section className="rounded-card border border-line bg-surface">
+      <header className="flex items-center justify-between gap-2 px-3.5 pt-3">
+        <h2 className="m-0 uppercase text-heading text-muted">{title}</h2>
         {aside}
       </header>
-      <div className="section-body">{children}</div>
+      <div className="grid gap-3 px-3.5 pb-3.5 pt-3">{children}</div>
     </section>
   )
 }

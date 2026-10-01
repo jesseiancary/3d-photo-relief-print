@@ -22,12 +22,15 @@ for gate in "npm run lint" "npm run format:check" "npx tsc -b" "npm test" "npm r
 done
 ```
 
-Then, **only if the diff touches** `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](../../src/core/threemf.ts) / [template.ts](../../src/core/template.ts)), launch the `pipeline-reviewer` agent and collect its findings. (Detect with `git diff main...HEAD --name-only`.)
+Then launch the relevant domain reviewer agent(s) and collect their findings — **only if the diff touches that domain** (detect with `git diff main...HEAD --name-only`):
+
+- `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](../../src/core/threemf.ts) / [template.ts](../../src/core/template.ts)) → `pipeline-reviewer`.
+- `src/index.css`, `src/lib/cn.ts`, the UI primitives in [src/components/](../../src/components/), or the feature components in [src/features/](../../src/features/) → `design-system-reviewer`.
 
 **Gate rule:**
 
 - If any CI gate fails → **STOP. Do not generate PR content.** Report the failing gate(s) with the key error lines and the offending file/line. If `format:check` is the only failure, note it is auto-fixable with `npm run format` (and normally prevented by the format-on-edit hook).
-- If the reviewer reports confirmed defects → surface them and **ask the user to confirm** before proceeding to content generation.
+- If a reviewer reports confirmed defects → surface them and **ask the user to confirm** before proceeding to content generation.
 - If all gates pass and the review is clean → continue.
 
 ### 2. Analyze git context
