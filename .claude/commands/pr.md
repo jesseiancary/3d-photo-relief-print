@@ -26,6 +26,7 @@ Then launch the relevant domain reviewer agent(s) and collect their findings —
 
 - `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](../../src/core/threemf.ts) / [template.ts](../../src/core/template.ts)) → `pipeline-reviewer`.
 - `src/index.css`, `src/lib/cn.ts`, the UI primitives in [src/components/](../../src/components/), or the feature components in [src/features/](../../src/features/) → `design-system-reviewer`.
+- test files or test infra (`src/**/*.test.*`, [src/test/](../../src/test/), [vitest.config.ts](../../vitest.config.ts), [e2e/](../../e2e/)) → `test-reviewer`.
 
 **Gate rule:**
 
@@ -169,5 +170,6 @@ type(scope): description here
 
 - [verify.md](verify.md) — the CI gate matrix this command runs as preflight
 - `.claude/agents/pipeline-reviewer.md` — domain review for core/3MF changes
+- `.claude/agents/test-reviewer.md` — domain review for test files / test infra
 - `.claude/rules/git.md` — Conventional commit format
 - [CLAUDE.md](../../CLAUDE.md) — Git workflow and automated-review policy

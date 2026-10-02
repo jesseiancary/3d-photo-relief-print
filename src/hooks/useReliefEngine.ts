@@ -5,6 +5,7 @@ import { saveFile } from '@/lib/platform'
 import { sampleImage } from '@/lib/sample'
 import { slug } from '@/lib/slug'
 import { Engine, type PreviewResult } from '@/worker/client'
+import { exportSummary, wedgeFilename } from './exportFormat'
 import type { Say } from './useStatus'
 
 export interface Busy {
@@ -17,6 +18,8 @@ interface Params {
   template: SlicerTemplate
   say: Say
   clear: () => void
+  /** How to construct the processing engine; defaults to a real Engine. Injectable for tests. */
+  engineFactory?: () => Engine
 }
 
 /**
@@ -24,8 +27,10 @@ interface Params {
  * preview trigger, and the 3MF / step-wedge exports. Previews stay "latest wins" (handled inside
  * `Engine`); the main-thread fallback is reported via `usingWorker`.
  */
-export function useReliefEngine({ settings, template, say, clear }: Params) {
-  const engine = useMemo(() => new Engine(), [])
+export function useReliefEngine({ settings, template, say, clear, engineFactory }: Params) {
+  // The engine is constructed once for the component's lifetime; engineFactory is read only on that
+  // first render, so it is intentionally omitted from the deps.
+  const engine = useMemo(() => (engineFactory ?? (() => new Engine()))(), [])
   const [preview, setPreview] = useState<PreviewResult | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageName, setImageName] = useState<string>('')
@@ -91,8 +96,7 @@ export function useReliefEngine({ settings, template, say, clear }: Params) {
       )
       setBusy({ stage: 'Saving', frac: 1 })
       const msg = await saveFile(`${fileBase}.3mf`, r.bytes)
-      const mb = (r.bytes.length / 1048576).toFixed(1)
-      say(`${msg} · ${(r.triangles / 1000).toFixed(0)}k triangles · ${mb} MB`)
+      say(exportSummary(msg, r.triangles, r.bytes.length))
     } catch (e) {
       say((e as Error).message, 'err')
     } finally {
@@ -103,10 +107,7 @@ export function useReliefEngine({ settings, template, say, clear }: Params) {
     setBusy({ stage: 'Building step wedge', frac: 0.5 })
     try {
       const r = await engine.wedge(settings, 'step-wedge', template)
-      const name = `step-wedge-${settings.filaments
-        .map((f) => slug(f.name.split(' ').pop() ?? ''))
-        .join('-')
-        .toLowerCase()}.3mf`
+      const name = wedgeFilename(settings.filaments)
       say(
         `${await saveFile(name, r.bytes)} · ${r.sizeMm[0].toFixed(0)} × ${r.sizeMm[1].toFixed(0)} mm`,
       )

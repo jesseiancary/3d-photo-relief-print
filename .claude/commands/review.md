@@ -18,6 +18,7 @@ This is a browser-only tool (no backend, no auth, no network). The checklist ref
 - [ ] New core logic has a test in `src/core/*.test.ts`
 - [ ] Edge cases covered (empty/1px images, single filament, extreme levels/gamma)
 - [ ] A single test file can be run in isolation (`npx vitest run src/core/<file>.test.ts`)
+- [ ] Test conventions honoured (DI seams over polyfills, reuse `src/test/helpers.ts`, DOM specs carry the jsdom pragma) — see [.claude/rules/testing.md](../rules/testing.md). For non-trivial test changes run the `vitest-health` skill or the `test-reviewer` agent.
 
 ### Core Pipeline (`src/core/`)
 

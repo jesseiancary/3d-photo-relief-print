@@ -28,7 +28,11 @@ interface ClaudeHost {
 let downloadsP: Promise<DownloadsNs | null> | null = null
 function downloads(): Promise<DownloadsNs | null> {
   if (!downloadsP) {
-    const host = (window as unknown as { claude?: ClaudeHost }).claude
+    // Guarded for non-browser contexts (SSR, the Node CLI, tests) where `window` is absent.
+    const host =
+      typeof window !== 'undefined'
+        ? (window as unknown as { claude?: ClaudeHost }).claude
+        : undefined
     downloadsP = host?.use
       ? (host.use('downloads') as Promise<DownloadsNs | null>).catch(() => null)
       : Promise.resolve(null)
@@ -47,6 +51,27 @@ function anchorDownload(filename: string, blob: Blob) {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(url), 30_000)
+}
+
+/* ---------- pure save decisions (unit-tested without the DOM/host) ---------- */
+
+/** How to react to a host save error: cancel quietly, retry zipped, or fail loudly. */
+export function classifySaveError(code: string | undefined): 'cancelled' | 'retry-zip' | 'fail' {
+  if (code === 'declined') return 'cancelled'
+  if (code === 'rejected_extension') return 'retry-zip'
+  return 'fail'
+}
+
+/** The .zip the file is wrapped in when the host rejects its extension (stored, uncompressed). */
+export function zipWrap(
+  filename: string,
+  data: Uint8Array | string,
+): { name: string; bytes: Uint8Array } {
+  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data
+  return {
+    name: filename.replace(/\.[^.]+$/, '') + '.zip',
+    bytes: zipSync({ [filename]: [bytes, { level: 0 }] }),
+  }
 }
 
 /**
@@ -68,21 +93,16 @@ export async function saveFile(
     await dl.save({ filename, data: blob })
     return `Saved ${filename}`
   } catch (e) {
-    const code = (e as { code?: string }).code
-    if (code === 'declined') return 'Save cancelled'
-    if (code !== 'rejected_extension') throw new Error((e as Error).message || 'Save failed')
+    const action = classifySaveError((e as { code?: string }).code)
+    if (action === 'cancelled') return 'Save cancelled'
+    if (action === 'fail') throw new Error((e as Error).message || 'Save failed')
   }
-  const bytes = typeof data === 'string' ? new TextEncoder().encode(data) : data
-  const zipName = filename.replace(/\.[^.]+$/, '') + '.zip'
+  const zip = zipWrap(filename, data)
   try {
-    await dl.save({
-      filename: zipName,
-      data: new Blob([zipSync({ [filename]: [bytes, { level: 0 }] }) as BlobPart]),
-    })
-    return `Saved ${zipName} — unzip it to get ${filename}`
+    await dl.save({ filename: zip.name, data: new Blob([zip.bytes as BlobPart]) })
+    return `Saved ${zip.name} — unzip it to get ${filename}`
   } catch (e) {
-    const code = (e as { code?: string }).code
-    if (code === 'declined') return 'Save cancelled'
+    if (classifySaveError((e as { code?: string }).code) === 'cancelled') return 'Save cancelled'
     throw new Error((e as Error).message || 'Save failed')
   }
 }

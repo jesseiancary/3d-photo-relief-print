@@ -1,20 +1,6 @@
+import { expectedVolume, randGrid, zsFor } from '@/test/helpers'
 import { describe, expect, it } from 'vitest'
 import { checkManifold, cornerMask, fixPinches, terraceMesh } from './mesh'
-
-function randGrid(cols: number, rows: number, levels: number, seed: number) {
-  let s = seed
-  const H = new Uint8Array(cols * rows).map(
-    () => 1 + (((s = (s * 1103515245 + 12345) & 0x7fffffff) >> 8) % levels),
-  )
-  return H
-}
-const zsFor = (n: number) => [0, ...Array.from({ length: n }, (_, i) => 0.56 + 0.08 * i)]
-
-function expectedVolume(H: Uint8Array, zs: number[], pitch: number) {
-  let v = 0
-  for (const h of H) v += zs[h] * pitch * pitch
-  return v
-}
 
 describe('terrace mesh', () => {
   it('flat plate is a closed box', () => {
@@ -72,4 +58,29 @@ describe('terrace mesh', () => {
       expect(c.volume).toBeCloseTo(expectedVolume(H, zs, 0.1), 4)
     })
   }
+
+  it('throws when given more than 15 heights', () => {
+    expect(() =>
+      terraceMesh(
+        new Uint8Array(1),
+        1,
+        1,
+        Array.from({ length: 17 }, () => 0),
+        1,
+      ),
+    ).toThrow(/at most 15 heights/)
+  })
+})
+
+describe('checkManifold', () => {
+  it('flags a non-watertight mesh (a lone triangle)', () => {
+    // one triangle: directed edges have no matching reverse → every edge is "bad"
+    const m = {
+      positions: new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]),
+      triangles: new Uint32Array([0, 1, 2]),
+    }
+    const c = checkManifold(m)
+    expect(c.ok).toBe(false)
+    expect(c.bad).toBeGreaterThan(0)
+  })
 })

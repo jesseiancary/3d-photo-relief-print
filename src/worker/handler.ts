@@ -1,5 +1,5 @@
 /** Runs in the Web Worker (or on the main thread as a fallback when workers are unavailable). */
-import { gridFor, rgbaToGray, type Gray } from '../core/image'
+import { applyCornerAlpha, gridFor, histogram, rgbaToGray, type Gray } from '../core/image'
 import { cornerMask } from '../core/mesh'
 import { buildMesh, grayRGBA, process, simulatedRGBA, stepWedge } from '../core/pipeline'
 import { write3mf } from '../core/threemf'
@@ -9,7 +9,28 @@ export const PREVIEW_ROWS = 900
 
 type Post = (msg: Response, transfer?: Transferable[]) => void
 
-export function createHandler(post: Post) {
+/** Rasterize a region of the loaded bitmap to a cols×rows grey buffer. */
+export type ToGray = (bitmap: ImageBitmap, cols: number, rows: number) => Gray
+
+export interface HandlerDeps {
+  /** How to rasterize the bitmap; defaults to an OffscreenCanvas path (overridable in tests). */
+  toGray?: ToGray
+}
+
+/** The production rasterizer: draw over white onto an OffscreenCanvas, then read it back. */
+const canvasToGray: ToGray = (source, cols, rows) => {
+  const c = new OffscreenCanvas(cols, rows)
+  const ctx = c.getContext('2d', { willReadFrequently: true })!
+  ctx.imageSmoothingEnabled = true
+  ctx.imageSmoothingQuality = 'high'
+  ctx.fillStyle = '#fff'
+  ctx.fillRect(0, 0, cols, rows)
+  ctx.drawImage(source, 0, 0, cols, rows)
+  return rgbaToGray(ctx.getImageData(0, 0, cols, rows).data, cols, rows)
+}
+
+export function createHandler(post: Post, deps: HandlerDeps = {}) {
+  const toGray = deps.toGray ?? canvasToGray
   let source: ImageBitmap | null = null
   const cache = new Map<string, Gray>()
 
@@ -18,14 +39,7 @@ export function createHandler(post: Post) {
     let g = cache.get(key)
     if (!g) {
       if (!source) throw new Error('No image loaded')
-      const c = new OffscreenCanvas(cols, rows)
-      const ctx = c.getContext('2d', { willReadFrequently: true })!
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(0, 0, cols, rows)
-      ctx.drawImage(source, 0, 0, cols, rows)
-      g = rgbaToGray(ctx.getImageData(0, 0, cols, rows).data, cols, rows)
+      g = toGray(source, cols, rows)
       if (cache.size > 3) cache.clear()
       cache.set(key, g)
     }
@@ -51,15 +65,14 @@ export function createHandler(post: Post) {
         const g = gridFor(source.width, source.height, heightMm, s.print.pitchMm, PREVIEW_ROWS)
         const src = grayAt(g.cols, g.rows)
         const p = process(src, s, g.mmPerPx)
-        const hist = Array.from({ length: 256 }, () => 0)
-        for (const v of src.data) hist[v]++
+        const hist = histogram(src)
         const sim = simulatedRGBA(p.tones, p.plan)
         const keep = cornerMask(
           g.cols,
           g.rows,
           (s.print.cornerRadius / 100) * Math.max(g.cols, g.rows),
         )
-        if (keep) for (let i = 0; i < keep.length; i++) if (!keep[i]) sim[i * 4 + 3] = 0
+        applyCornerAlpha(sim, keep)
         const adj = grayRGBA(p.adjusted)
         post(
           {

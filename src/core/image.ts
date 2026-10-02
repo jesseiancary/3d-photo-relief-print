@@ -119,6 +119,22 @@ export function adjust(src: Gray, a: AdjustSettings, mmPerPx: number): Gray {
   return g
 }
 
+/** 256-bin histogram of grey values (used to drive auto-levels). */
+export function histogram(g: Gray): number[] {
+  const hist = Array.from({ length: 256 }, () => 0)
+  for (const v of g.data) hist[v]++
+  return hist
+}
+
+/**
+ * Zero the alpha of RGBA pixels that a corner-rounding mask dropped (mutates in place).
+ * A null mask (no rounding) is a no-op. `keep[i]` corresponds to pixel `i`.
+ */
+export function applyCornerAlpha(rgba: Uint8ClampedArray, keep: Uint8Array | null): void {
+  if (!keep) return
+  for (let i = 0; i < keep.length; i++) if (!keep[i]) rgba[i * 4 + 3] = 0
+}
+
 /** grey → tone index via a 256-entry lookup table */
 export function quantize(g: Gray, lut: Uint8Array): Uint8Array {
   const out = new Uint8Array(g.data.length)
