@@ -5,15 +5,21 @@ import { readJSON, writeJSON } from '@/lib/platform'
 
 const SETTINGS_KEY = 'photo-relief.settings.v1'
 
-function loadSettings(): Settings {
-  const d = defaultSettings()
-  const s = readJSON<Partial<Settings>>(SETTINGS_KEY, {})
+/**
+ * Merge a persisted (possibly partial/old) Settings over the defaults, slice by slice, so a missing
+ * or empty slice falls back to defaults. Pure — kept separate from the hook so it is unit-testable.
+ */
+export function mergeSettings(d: Settings, s: Partial<Settings>): Settings {
   return {
     print: { ...d.print, ...s.print },
     adjust: { ...d.adjust, ...s.adjust },
     tones: { ...d.tones, ...s.tones },
     filaments: s.filaments?.length ? s.filaments : d.filaments,
   }
+}
+
+function loadSettings(): Settings {
+  return mergeSettings(defaultSettings(), readJSON<Partial<Settings>>(SETTINGS_KEY, {}))
 }
 
 /** The central `Settings` object: loaded from and persisted to localStorage, with slice updaters. */

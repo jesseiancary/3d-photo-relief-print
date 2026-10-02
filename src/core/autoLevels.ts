@@ -1,4 +1,4 @@
-import type { AdjustSettings } from '@/core/types'
+import type { AdjustSettings } from './types'
 
 /**
  * Derive black/white points (and reset gamma) from a 256-bin grey histogram by clipping

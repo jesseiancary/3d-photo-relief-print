@@ -5,12 +5,17 @@ import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '@/core/de
 import { autoLayers, type Band } from '@/core/tones'
 import type { Filament, PrintSettings } from '@/core/types'
 import { pickTextFile, readJSON, saveFile, writeJSON } from '@/lib/platform'
+import {
+  instantiateProfile,
+  mergeProfiles,
+  parseProfiles,
+  profileFromFilaments,
+  removeProfile,
+  upsertProfile,
+  type Profile,
+} from './profiles'
 
 const PROFILES_KEY = 'photo-relief.profiles.v1'
-interface Profile {
-  name: string
-  filaments: Omit<Filament, 'id'>[]
-}
 
 export interface FilamentStackProps {
   filaments: Filament[]
@@ -50,19 +55,14 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
     writeJSON(PROFILES_KEY, p)
   }
   const saveProfile = () => {
-    const name = profileName.trim() || filaments.map((f) => f.name.split(' ').pop()).join(' / ')
-    const entry: Profile = { name, filaments: filaments.map(({ id: _id, ...rest }) => rest) }
-    saveProfiles(
-      [...profiles.filter((p) => p.name !== name), entry].sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
-    )
+    const entry = profileFromFilaments(filaments, profileName)
+    saveProfiles(upsertProfile(profiles, entry))
     setProfileName('')
-    onStatus(`Saved filament profile “${name}”`)
+    onStatus(`Saved filament profile “${entry.name}”`)
   }
   const loadProfile = (name: string) => {
     const p = profiles.find((x) => x.name === name)
-    if (p) onChange(p.filaments.map((f) => ({ ...f, id: newId() })))
+    if (p) onChange(instantiateProfile(p))
   }
 
   const rows = filaments.map((f, i) => ({ f, i })).reverse() // top of the print first
@@ -249,7 +249,7 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                   <span className="min-w-0 flex-1 wrap-anywhere">{p.name}</span>
                   <Button
                     variant="link"
-                    onClick={() => saveProfiles(profiles.filter((x) => x.name !== p.name))}
+                    onClick={() => saveProfiles(removeProfile(profiles, p.name))}
                   >
                     Delete
                   </Button>
@@ -276,17 +276,8 @@ export function FilamentStack({ filaments, bands, print, onChange, onStatus }: F
                 const text = await pickTextFile('.json,application/json')
                 if (!text) return
                 try {
-                  const incoming = JSON.parse(text) as Profile[]
-                  if (
-                    !Array.isArray(incoming) ||
-                    !incoming.every((p) => p.name && Array.isArray(p.filaments))
-                  )
-                    throw new Error()
-                  const merged = [
-                    ...profiles.filter((p) => !incoming.some((q) => q.name === p.name)),
-                    ...incoming,
-                  ]
-                  saveProfiles(merged.sort((a, b) => a.name.localeCompare(b.name)))
+                  const incoming = parseProfiles(text)
+                  saveProfiles(mergeProfiles(profiles, incoming))
                   onStatus(`Imported ${incoming.length} profile${incoming.length === 1 ? '' : 's'}`)
                 } catch {
                   onStatus('That file is not a filament profile export')

@@ -20,8 +20,12 @@ Currently browser-only, but this is expected to grow into a full multi-user app.
 ```bash
 npm install
 npm run dev             # local dev server
-npm test                # vitest run (tone model, median blur, mesh manifold checks, end-to-end 3MF)
+npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
+npm run test:watch      # vitest in watch mode
+npm run coverage        # vitest run with a v8 coverage report → coverage/ (report-only, no gate)
+npm run e2e             # Playwright end-to-end (first run: npx playwright install chromium)
 npx vitest run src/core/mesh.test.ts   # a single test file
+npm run typecheck       # verify types
 npm run lint            # oxlint
 npm run format          # format everything with Prettier
 npm run format:check    # verify formatting (no writes)
@@ -70,6 +74,18 @@ Read [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) before touching 3MF ou
 After completing a batch of changes to `src/core/mesh.ts`, `src/core/tones.ts`, `src/core/pipeline.ts`, or the 3MF export path ([threemf.ts](src/core/threemf.ts) / [template.ts](src/core/template.ts)), and **before reporting the work done**, proactively launch the `pipeline-reviewer` agent (`.claude/agents/pipeline-reviewer.md`) and fold its findings into the change. Trigger it once the change is coherent — at task completion, not after every edit — since these areas fail silently (non-manifold mesh, dropped Bambu config, uneven CIE L\* tones). No need to wait for an explicit request.
 
 Likewise, after a batch of changes to the design system — [src/index.css](src/index.css), [src/lib/cn.ts](src/lib/cn.ts), the UI primitives in [src/components/](src/components/), or the feature components in [src/features/](src/features/) — and **before reporting the work done**, launch the `design-system-reviewer` agent (`.claude/agents/design-system-reviewer.md`) and fold its findings in. These areas fail silently too (an unregistered `cn()` token dropping a size/override, a `color-mix` token compiling opaque under `@theme inline`, unlayered CSS outranking utilities). It runs the `tailwind-tokens-validate` skill for the mechanical checks.
+
+Likewise, after a batch of changes to tests or test infra — `src/**/*.test.*`, the shared fixtures in [src/test/](src/test/), [vitest.config.ts](vitest.config.ts), or the [e2e/](e2e/) specs — and **before reporting the work done**, launch the `test-reviewer` agent (`.claude/agents/test-reviewer.md`) and fold its findings in. Tests fail silently too (a stray `.only` skipping the rest of a file, a DOM spec missing its `// @vitest-environment jsdom` pragma, an assertion-less test, a re-defined LCG, or a cast that hides contract drift). It runs the `vitest-health` skill for the mechanical checks; the conventions it reviews against are in [.claude/rules/testing.md](.claude/rules/testing.md).
+
+## Testing
+
+Vitest config is in [vitest.config.ts](vitest.config.ts) (kept out of the Vite build config). Three layers:
+
+- **Unit (Node, the default):** pure `src/core/` logic plus extracted helpers — the bulk of coverage. Tests sit next to their module as `*.test.ts`. Shared fixtures (seeded RNG, median/volume oracles, preset filament builders) live in [src/test/helpers.ts](src/test/helpers.ts) — reuse them, don't re-define a local LCG.
+- **Hook/component (jsdom):** opt a spec into the DOM per-file with a `// @vitest-environment jsdom` pragma (keeps the fast Node default everywhere else). Uses `@testing-library/react`; `src/test/setup.ts` wires jest-dom + cleanup.
+- **End-to-end (Playwright):** specs in [e2e/](e2e/) run against `npm run dev`; excluded from Vitest. They cover what jsdom can't — canvas painting, the real Web Worker round-trip, and the file download → 3MF (validated against the Bambu loader rules).
+
+Testability seams exist so logic can be unit-tested without the browser — prefer them over polyfilling: `createHandler(post, { toGray })` injects the rasterizer, `new Engine({ workerFactory, decode })` injects the worker/decoder, and `main(argv, io)` in [scripts/cli.ts](scripts/cli.ts) injects file I/O. When adding logic to a worker/React/DOM-bound file, extract the pure part (as was done for `computeAutoLevels`, `histogram`, `applyCornerAlpha`, `mergeSettings`, `profiles.ts`, the `saveFile` decision helpers) rather than writing a browser-only test. Coverage (`npm run coverage`, v8) is **report-only** — no CI gate yet.
 
 ## Styling
 

@@ -6,6 +6,13 @@ import ReliefWorker from './relief.worker?worker&inline'
 
 type Listener = (r: Response) => void
 
+export interface EngineDeps {
+  /** How to create the worker; defaults to the inlined ReliefWorker. Injectable for tests. */
+  workerFactory?: () => Worker
+  /** How to decode a Blob into an ImageBitmap; defaults to createImageBitmap. Injectable for tests. */
+  decode?: (image: Blob) => Promise<ImageBitmap>
+}
+
 /**
  * Talks to the processing worker. Previews are "latest wins": at most one in flight and one queued,
  * so dragging a slider never builds a backlog. If the worker can't start (some sandboxes block them),
@@ -20,11 +27,14 @@ export class Engine {
   private lastSettings: Settings | null = null
   private image: Blob | null = null
   private heardFromWorker = false
+  private decode: (image: Blob) => Promise<ImageBitmap>
   usingWorker = true
 
-  constructor() {
+  constructor(deps: EngineDeps = {}) {
+    const makeWorker = deps.workerFactory ?? (() => new ReliefWorker())
+    this.decode = deps.decode ?? ((image) => createImageBitmap(image))
     try {
-      const w = new ReliefWorker()
+      const w = makeWorker()
       w.onmessage = (e: MessageEvent<Response>) => {
         this.heardFromWorker = true
         this.dispatch(e.data)
@@ -69,7 +79,7 @@ export class Engine {
 
   async load(image: Blob) {
     this.image = image
-    const bitmap = await createImageBitmap(image)
+    const bitmap = await this.decode(image)
     this.send({ kind: 'load', bitmap }, [bitmap])
   }
 

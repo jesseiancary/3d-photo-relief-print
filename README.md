@@ -23,7 +23,10 @@ Processing runs in a Web Worker (`src/worker`) and falls back to the main thread
 ```bash
 npm install
 npm run dev             # local dev server
-npm test                # unit tests (tone model, median, mesh manifold checks, end-to-end 3MF)
+npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
+npm run test:watch      # vitest in watch mode
+npm run coverage        # vitest run with a v8 coverage report → coverage/
+npm run e2e             # Playwright end-to-end (needs: npx playwright install chromium)
 npm run lint            # oxlint
 npm run format          # format everything with Prettier
 npm run format:check    # check formatting without writing (CI-friendly)
