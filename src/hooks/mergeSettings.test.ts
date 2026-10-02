@@ -1,6 +1,8 @@
+import { describe, expect, it } from 'vitest'
+
 import { defaultSettings } from '@/core/defaults'
 import type { Settings } from '@/core/types'
-import { describe, expect, it } from 'vitest'
+
 import { mergeSettings } from './useSettings'
 
 describe('mergeSettings', () => {

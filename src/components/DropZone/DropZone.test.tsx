@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+
 import { DropZone } from './DropZone'
 
 function renderZone(dragging = false) {

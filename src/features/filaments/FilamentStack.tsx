@@ -1,10 +1,12 @@
 import { useState } from 'react'
+
 import { Button } from '@/components/Button'
 import { Hint } from '@/components/Hint'
 import { FILAMENT_PRESETS, MAX_FILAMENTS, MIN_FILAMENTS, newId } from '@/core/defaults'
 import { autoLayers, type Band } from '@/core/tones'
 import type { Filament, PrintSettings } from '@/core/types'
 import { pickTextFile, readJSON, saveFile, writeJSON } from '@/lib/platform'
+
 import {
   instantiateProfile,
   mergeProfiles,

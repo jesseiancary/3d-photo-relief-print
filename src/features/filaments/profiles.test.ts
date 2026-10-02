@@ -1,5 +1,7 @@
-import type { Filament } from '@/core/types'
 import { describe, expect, it } from 'vitest'
+
+import type { Filament } from '@/core/types'
+
 import {
   defaultProfileName,
   instantiateProfile,

@@ -1,6 +1,6 @@
-import { cn } from '@/lib/cn'
 import type { TonePlan } from '@/core/tones'
 import type { Filament } from '@/core/types'
+import { cn } from '@/lib/cn'
 
 const th = 'border-b border-line pb-1.5 pr-2 text-left text-label text-muted'
 const td = 'border-b border-line py-1.75 pr-2 align-top'

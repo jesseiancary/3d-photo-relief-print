@@ -1,5 +1,6 @@
 import { Hint } from '@/components/Hint'
 import { Section } from '@/components/Section'
+
 import { FilamentStack, type FilamentStackProps } from './FilamentStack'
 
 export function FilamentsSection(props: FilamentStackProps) {

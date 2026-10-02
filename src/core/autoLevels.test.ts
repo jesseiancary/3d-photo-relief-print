@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { computeAutoLevels } from './autoLevels'
 
 const spike = (at: number, count = 1000): number[] => {

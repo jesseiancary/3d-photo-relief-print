@@ -1,16 +1,17 @@
 // @vitest-environment jsdom
-import { defaultSettings } from '@/core/defaults'
-import { DEFAULT_TEMPLATE } from '@/core/template'
-import type { Engine } from '@/worker/client'
-import type { Response } from '@/worker/protocol'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { defaultSettings } from '@/core/defaults'
+import { DEFAULT_TEMPLATE } from '@/core/template'
+import { saveFile } from '@/lib/platform'
+import type { Engine } from '@/worker/client'
+import type { Response } from '@/worker/protocol'
+
+import { useReliefEngine } from './useReliefEngine'
+
 vi.mock('@/lib/sample', () => ({ sampleImage: vi.fn(async () => new Blob([new Uint8Array([1])])) }))
 vi.mock('@/lib/platform', () => ({ saveFile: vi.fn(async () => 'Saved relief.3mf') }))
-
-import { saveFile } from '@/lib/platform'
-import { useReliefEngine } from './useReliefEngine'
 
 // Minimal controllable stand-in for the real Engine.
 class FakeEngine {

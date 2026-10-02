@@ -3,6 +3,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { argv } from 'node:process'
 import { fileURLToPath } from 'node:url'
+
 import { defaultSettings } from '../src/core/defaults'
 import { gridFor, type Gray } from '../src/core/image'
 import { checkManifold } from '../src/core/mesh'

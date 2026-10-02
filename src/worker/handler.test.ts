@@ -1,6 +1,8 @@
+import { describe, expect, it } from 'vitest'
+
 import { defaultSettings } from '@/core/defaults'
 import type { Gray } from '@/core/image'
-import { describe, expect, it } from 'vitest'
+
 import { createHandler, type ToGray } from './handler'
 import type { Response } from './protocol'
 

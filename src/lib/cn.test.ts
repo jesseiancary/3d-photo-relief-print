@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+
 import { cn } from './cn'
 
 // These guard the silent tailwind-merge mis-merges documented in cn.ts: a custom

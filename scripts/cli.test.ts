@@ -1,5 +1,6 @@
 import { strFromU8, unzipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
+
 import { main, type CliIO } from './cli'
 
 // At heightIn=1 the grid is 254×254 (25.4mm / 0.1mm pitch), so a 254×254 grey input

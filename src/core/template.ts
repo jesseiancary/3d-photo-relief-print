@@ -7,6 +7,7 @@
  * bits (colors) plus the layer height at export time.
  */
 import { strFromU8, unzipSync } from 'fflate'
+
 import defaultTemplate from './defaultTemplate.json'
 import type { Filament, PrintSettings } from './types'
 
