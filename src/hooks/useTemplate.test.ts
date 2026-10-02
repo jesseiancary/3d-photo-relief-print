@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { DEFAULT_TEMPLATE } from '@/core/template'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { strToU8, zipSync } from 'fflate'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
+import { DEFAULT_TEMPLATE } from '@/core/template'
+
 import { useTemplate } from './useTemplate'
 
 const KEY = 'photo-relief.template.v1'

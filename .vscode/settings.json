@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.removeUnusedImports": "explicit" },
   "css.lint.unknownAtRules": "ignore",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },

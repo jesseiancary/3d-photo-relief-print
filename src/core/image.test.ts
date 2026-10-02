@@ -1,5 +1,7 @@
-import { bruteMedian, randGray } from '@/test/helpers'
 import { describe, expect, it } from 'vitest'
+
+import { bruteMedian, randGray } from '@/test/helpers'
+
 import { adjust, gridFor, histogram, median, quantize, rgbaToGray, type Gray } from './image'
 
 describe('image ops', () => {

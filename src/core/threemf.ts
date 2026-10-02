@@ -6,7 +6,8 @@
  *    Bambu Studio drops ALL config, swaps included, unless that tag reads "BambuStudio-<version>".
  *  - Plain geometry (no template): a bare core-spec 3MF for other slicers, with swap-instructions.txt.
  */
-import { Zip, ZipDeflate, strToU8 } from 'fflate'
+import { strToU8, Zip, ZipDeflate } from 'fflate'
+
 import type { Mesh } from './mesh'
 import { projectConfigFor, type SlicerTemplate } from './template'
 import type { TonePlan } from './tones'

@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+
 import { expect, test } from '@playwright/test'
 import { strFromU8, unzipSync } from 'fflate'
 

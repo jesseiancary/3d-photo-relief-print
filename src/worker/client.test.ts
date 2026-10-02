@@ -1,6 +1,8 @@
+import { describe, expect, it, vi } from 'vitest'
+
 import { defaultSettings } from '@/core/defaults'
 import type { Settings } from '@/core/types'
-import { describe, expect, it, vi } from 'vitest'
+
 import { Engine } from './client'
 import type { Request, Response } from './protocol'
 

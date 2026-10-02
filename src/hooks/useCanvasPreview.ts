@@ -1,4 +1,5 @@
-import { type RefObject, useEffect } from 'react'
+import { useEffect, type RefObject } from 'react'
+
 import type { View } from '@/features/preview'
 import type { PreviewResult } from '@/worker/client'
 

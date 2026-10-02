@@ -1,8 +1,10 @@
 // @vitest-environment jsdom
-import { defaultFilaments, defaultSettings } from '@/core/defaults'
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+
+import { defaultFilaments, defaultSettings } from '@/core/defaults'
+
 import { FilamentStack } from './FilamentStack'
 
 const print = defaultSettings().print

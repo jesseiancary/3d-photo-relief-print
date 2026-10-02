@@ -1,5 +1,6 @@
 import { strFromU8, unzipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
+
 import { classifySaveError, zipWrap } from './platform'
 
 describe('classifySaveError', () => {

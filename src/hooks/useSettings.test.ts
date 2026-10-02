@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
-import { defaultSettings } from '@/core/defaults'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
+
+import { defaultSettings } from '@/core/defaults'
+
 import { useSettings } from './useSettings'
 
 const KEY = 'photo-relief.settings.v1'

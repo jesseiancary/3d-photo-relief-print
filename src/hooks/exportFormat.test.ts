@@ -1,5 +1,7 @@
-import type { Filament } from '@/core/types'
 import { describe, expect, it } from 'vitest'
+
+import type { Filament } from '@/core/types'
+
 import { exportSummary, wedgeFilename } from './exportFormat'
 
 const fil = (name: string): Filament => ({ id: name, name, color: '#000000', td: 1, layers: null })

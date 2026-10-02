@@ -1,5 +1,7 @@
-import { expectedVolume, randGrid, zsFor } from '@/test/helpers'
 import { describe, expect, it } from 'vitest'
+
+import { expectedVolume, randGrid, zsFor } from '@/test/helpers'
+
 import { checkManifold, cornerMask, fixPinches, terraceMesh } from './mesh'
 
 describe('terrace mesh', () => {

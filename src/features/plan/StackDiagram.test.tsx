@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
+import { render, screen } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
 import { defaultSettings } from '@/core/defaults'
 import { planTones } from '@/core/tones'
 import { filFromPresets } from '@/test/helpers'
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+
 import { StackDiagram } from './StackDiagram'
 
 const print = defaultSettings().print

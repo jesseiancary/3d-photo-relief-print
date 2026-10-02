@@ -1,6 +1,7 @@
 // Turns dist-single/index.html into a body-only page for publishing as a claude.ai artifact
 // (the host supplies <!doctype>/<html>/<head>/<body>). Title stays first so it is found in the first 8 KB.
 import { readFileSync, writeFileSync } from 'node:fs'
+
 const html = readFileSync('dist-single/index.html', 'utf8')
 const head = html.match(/<head>([\s\S]*?)<\/head>/)[1]
 const body = html.match(/<body>([\s\S]*?)<\/body>/)[1]

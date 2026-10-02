@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { DEFAULT_TEMPLATE, parseTemplate, type SlicerTemplate, summarize } from '@/core/template'
+
+import { DEFAULT_TEMPLATE, parseTemplate, summarize, type SlicerTemplate } from '@/core/template'
+
 import type { Say } from './useStatus'
 
 const TEMPLATE_KEY = 'photo-relief.template.v1'

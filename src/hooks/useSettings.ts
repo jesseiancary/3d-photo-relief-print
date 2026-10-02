@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+
 import { defaultSettings } from '@/core/defaults'
 import type { Settings } from '@/core/types'
 import { readJSON, writeJSON } from '@/lib/platform'

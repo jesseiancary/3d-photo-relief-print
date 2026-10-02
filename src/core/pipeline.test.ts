@@ -1,5 +1,6 @@
-import { unzipSync, strFromU8 } from 'fflate'
+import { strFromU8, unzipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
+
 import { defaultSettings } from './defaults'
 import { applyCornerAlpha, gridFor } from './image'
 import { checkManifold } from './mesh'

@@ -1,9 +1,16 @@
-import { filFromPresets } from '@/test/helpers'
 import { strToU8, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
+
+import { filFromPresets } from '@/test/helpers'
+
 import { defaultSettings } from './defaults'
-import { DEFAULT_TEMPLATE, parseTemplate, projectConfigFor, summarize } from './template'
-import type { SlicerTemplate } from './template'
+import {
+  DEFAULT_TEMPLATE,
+  parseTemplate,
+  projectConfigFor,
+  summarize,
+  type SlicerTemplate,
+} from './template'
 
 // Build a minimal .3mf project zip for parseTemplate. Pass nulls to omit a part.
 function makeProject(opts: {
