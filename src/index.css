@@ -42,6 +42,11 @@
   --stage: light-dark(#dfe3e2, #0b0d0e);
   --shadow: 0 1px 2px rgb(20 24 28 / 0.06), 0 8px 24px -12px rgb(20 24 28 / 0.18);
 
+  /* Crop overlay — sits over arbitrary photo pixels, so these are theme-independent: a bright
+     hairline for the frame/grid/handles and a dark wash to dim the area outside the crop. */
+  --crop-line: rgb(255 255 255 / 0.9);
+  --crop-shade: rgb(0 0 0 / 0.5);
+
   --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --body: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;

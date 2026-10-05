@@ -19,6 +19,19 @@ describe('mergeSettings', () => {
     expect(merged.adjust).toEqual(d.adjust) // untouched slice kept
   })
 
+  it('gives old persisted settings a full-frame crop default', () => {
+    const d = defaultSettings()
+    // A value persisted before the crop slice existed carries no `crop`.
+    const legacy = { print: { heightIn: 6 } } as Partial<Settings>
+    expect(mergeSettings(d, legacy).crop).toEqual({ x: 0, y: 0, w: 1, h: 1 })
+  })
+
+  it('keeps a persisted crop rectangle', () => {
+    const d = defaultSettings()
+    const crop = { x: 0.1, y: 0.2, w: 0.5, h: 0.6 }
+    expect(mergeSettings(d, { crop }).crop).toEqual(crop)
+  })
+
   it('falls back to default filaments when the persisted list is missing or empty', () => {
     const d = defaultSettings()
     expect(mergeSettings(d, { filaments: [] }).filaments).toBe(d.filaments)

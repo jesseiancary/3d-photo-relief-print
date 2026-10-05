@@ -8,10 +8,13 @@ export function useCanvasPreview(
   canvasRef: RefObject<HTMLCanvasElement | null>,
   preview: PreviewResult | null,
   view: View,
+  // The canvas is unmounted while cropping; depend on `cropping` so leaving crop mode repaints the
+  // freshly remounted canvas (otherwise it stays blank until the next preview/view change).
+  cropping: boolean,
 ) {
   useEffect(() => {
     const c = canvasRef.current
-    if (!c || !preview || view === 'original') return
+    if (!c || !preview || view === 'original' || cropping) return
     c.width = preview.cols
     c.height = preview.rows
     const data = view === 'print' ? preview.sim : preview.adj
@@ -20,5 +23,5 @@ export function useCanvasPreview(
       0,
       0,
     )
-  }, [canvasRef, preview, view])
+  }, [canvasRef, preview, view, cropping])
 }

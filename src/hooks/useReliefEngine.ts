@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { SlicerTemplate } from '@/core/template'
 import type { Settings } from '@/core/types'
@@ -22,6 +22,8 @@ interface Params {
   clear: () => void
   /** How to construct the processing engine; defaults to a real Engine. Injectable for tests. */
   engineFactory?: () => Engine
+  /** Called whenever a new image finishes loading (used to reset per-image state like the crop). */
+  onImageLoad?: () => void
 }
 
 /**
@@ -29,14 +31,25 @@ interface Params {
  * preview trigger, and the 3MF / step-wedge exports. Previews stay "latest wins" (handled inside
  * `Engine`); the main-thread fallback is reported via `usingWorker`.
  */
-export function useReliefEngine({ settings, template, say, clear, engineFactory }: Params) {
+export function useReliefEngine({
+  settings,
+  template,
+  say,
+  clear,
+  engineFactory,
+  onImageLoad,
+}: Params) {
   // The engine is constructed once for the component's lifetime; engineFactory is read only on that
   // first render, so it is intentionally omitted from the deps.
   const engine = useMemo(() => (engineFactory ?? (() => new Engine()))(), [])
+  // Held in a ref so the (identity-unstable) callback never churns the engine.on effect deps.
+  const onImageLoadRef = useRef(onImageLoad)
+  onImageLoadRef.current = onImageLoad
   const [preview, setPreview] = useState<PreviewResult | null>(null)
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [imageName, setImageName] = useState<string>('')
   const [isSample, setIsSample] = useState(true)
+  const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null)
   const [imageVersion, setImageVersion] = useState(0)
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState<Busy | null>(null)
@@ -44,8 +57,11 @@ export function useReliefEngine({ settings, template, say, clear, engineFactory 
   useEffect(
     () =>
       engine.on((r) => {
-        if (r.kind === 'loaded') setImageVersion((v) => v + 1)
-        else if (r.kind === 'preview') setPreview(r)
+        if (r.kind === 'loaded') {
+          setImageVersion((v) => v + 1)
+          setImageSize({ w: r.w, h: r.h })
+          onImageLoadRef.current?.()
+        } else if (r.kind === 'preview') setPreview(r)
         else if (r.kind === 'error' && r.reqId === -2) say(r.message, 'err')
       }),
     [engine, say],
@@ -124,6 +140,7 @@ export function useReliefEngine({ settings, template, say, clear, engineFactory 
     preview,
     imageUrl,
     imageName,
+    imageSize,
     isSample,
     usingWorker: engine.usingWorker,
     loadImage,
