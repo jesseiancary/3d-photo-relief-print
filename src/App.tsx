@@ -4,6 +4,7 @@ import { Hint } from '@/components/Hint'
 import { Panel } from '@/components/Panel'
 import { baseLayers, layerTop } from '@/core/tones'
 import { AdjustSection, computeAutoLevels } from '@/features/adjust'
+import { useCropEditor } from '@/features/crop'
 import { ExportCard } from '@/features/export'
 import { FilamentsSection } from '@/features/filaments'
 import { PhotoSection } from '@/features/photo'
@@ -21,12 +22,27 @@ export default function App() {
   const { status, say, clear } = useStatus()
   const { settings, defs, set, setFilaments } = useSettings()
   const { template, summary: tpl, isCustom, importTemplate, resetTemplate } = useTemplate(say)
-  const engine = useReliefEngine({ settings, template, say, clear })
+  const engine = useReliefEngine({
+    settings,
+    template,
+    say,
+    clear,
+    onImageLoad: () => set('crop', defs.crop),
+  })
 
   const [view, setView] = useState<View>('print')
   const [dragging, setDragging] = useState(false)
+  const [cropping, setCropping] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  useCanvasPreview(canvasRef, engine.preview, view)
+  useCanvasPreview(canvasRef, engine.preview, view, cropping)
+
+  const imgAspect = engine.imageSize ? engine.imageSize.w / engine.imageSize.h : 1
+  const cropCtl = useCropEditor({
+    imgAspect,
+    crop: settings.crop,
+    onChange: (rect) => set('crop', rect),
+    fullFrame: defs.crop,
+  })
 
   const autoLevels = () => {
     if (!engine.preview) return
@@ -130,6 +146,11 @@ export default function App() {
             setDragging={setDragging}
             onFiles={engine.onFiles}
             canvasRef={canvasRef}
+            cropping={cropping}
+            setCropping={setCropping}
+            crop={settings.crop}
+            onCrop={(rect) => set('crop', rect)}
+            cropCtl={cropCtl}
           />
 
           {warnings.length > 0 && (

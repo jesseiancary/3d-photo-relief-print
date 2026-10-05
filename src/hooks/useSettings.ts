@@ -15,6 +15,7 @@ export function mergeSettings(d: Settings, s: Partial<Settings>): Settings {
     print: { ...d.print, ...s.print },
     adjust: { ...d.adjust, ...s.adjust },
     tones: { ...d.tones, ...s.tones },
+    crop: { ...d.crop, ...s.crop },
     filaments: s.filaments?.length ? s.filaments : d.filaments,
   }
 }
@@ -32,8 +33,10 @@ export function useSettings() {
     writeJSON(SETTINGS_KEY, settings)
   }, [settings])
 
-  const set = <K extends 'print' | 'adjust' | 'tones'>(k: K, patch: Partial<Settings[K]>) =>
-    setSettings((s) => ({ ...s, [k]: { ...s[k], ...patch } }))
+  const set = <K extends 'print' | 'adjust' | 'tones' | 'crop'>(
+    k: K,
+    patch: Partial<Settings[K]>,
+  ) => setSettings((s) => ({ ...s, [k]: { ...s[k], ...patch } }))
   const setFilaments = (filaments: Settings['filaments']) =>
     setSettings((s) => ({ ...s, filaments }))
 

@@ -42,10 +42,19 @@ export interface ToneSettings {
   count: number
 }
 
+/** Crop rectangle in normalized fractions of the source image (0..1); full frame = {0,0,1,1}. */
+export interface CropSettings {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 export interface Settings {
   print: PrintSettings
   adjust: AdjustSettings
   tones: ToneSettings
+  crop: CropSettings
   filaments: Filament[]
 }
 

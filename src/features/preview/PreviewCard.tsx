@@ -1,9 +1,12 @@
 import type { RefObject } from 'react'
 
+import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { DropZone } from '@/components/DropZone'
 import { Segmented } from '@/components/Segmented'
 import type { TonePlan } from '@/core/tones'
+import type { CropSettings } from '@/core/types'
+import { CropControls, CropEditor, type CropEditorState } from '@/features/crop'
 
 export type View = 'print' | 'adjusted' | 'original'
 
@@ -20,6 +23,11 @@ interface Props {
   setDragging: (v: boolean) => void
   onFiles: (files: FileList | null) => void
   canvasRef: RefObject<HTMLCanvasElement | null>
+  cropping: boolean
+  setCropping: (v: boolean) => void
+  crop: CropSettings
+  onCrop: (rect: CropSettings) => void
+  cropCtl: CropEditorState
 }
 
 export function PreviewCard({
@@ -35,21 +43,39 @@ export function PreviewCard({
   setDragging,
   onFiles,
   canvasRef,
+  cropping,
+  setCropping,
+  crop,
+  onCrop,
+  cropCtl,
 }: Props) {
   return (
     <Card className="overflow-hidden">
       <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-line px-3 py-2.5">
-        <Segmented
-          className="shrink grow-0 basis-75"
-          label="Preview"
-          value={view}
-          options={[
-            { value: 'print', label: 'Print' },
-            { value: 'adjusted', label: 'Adjusted' },
-            { value: 'original', label: 'Original' },
-          ]}
-          onChange={setView}
-        />
+        {cropping ? (
+          <CropControls
+            aspectId={cropCtl.aspectId}
+            onAspect={cropCtl.chooseAspect}
+            orientation={cropCtl.orientation}
+            onOrientation={cropCtl.chooseOrientation}
+            canOrient={cropCtl.canOrient}
+            canReset={!cropCtl.isFull}
+            onReset={cropCtl.reset}
+            onDone={() => setCropping(false)}
+          />
+        ) : (
+          <Segmented
+            className="shrink grow-0 basis-75"
+            label="Preview"
+            value={view}
+            options={[
+              { value: 'print', label: 'Print' },
+              { value: 'adjusted', label: 'Adjusted' },
+              { value: 'original', label: 'Original' },
+            ]}
+            onChange={setView}
+          />
+        )}
         {hasPreview && (
           <span className="num text-caption text-muted">
             {(widthMm / 25.4).toFixed(2)} × {heightIn.toFixed(2)} in ·{' '}
@@ -64,24 +90,40 @@ export function PreviewCard({
         setDragging={setDragging}
         onFiles={onFiles}
       >
-        {view === 'original' && imageUrl ? (
-          <img
-            src={imageUrl}
-            alt="Original"
-            className="block h-auto max-h-full w-auto max-w-full object-contain shadow-stage"
+        {cropping && imageUrl ? (
+          <CropEditor
+            imageUrl={imageUrl}
+            value={crop}
+            onChange={onCrop}
+            fracAspect={cropCtl.fracAspect}
           />
         ) : (
-          <canvas
-            ref={canvasRef}
-            aria-label="Preview"
-            className="block h-auto max-h-full w-auto max-w-full object-contain shadow-stage"
-          />
-        )}
-        {!hasPreview && <p className="text-muted">Preparing preview…</p>}
-        {isSample && hasPreview && (
-          <span className="absolute bottom-3 left-3 rounded-sm border border-line bg-surface-overlay px-2 py-1 text-caption">
-            Sample Scene · choose a photo to start
-          </span>
+          <>
+            {view === 'original' && imageUrl ? (
+              <img
+                src={imageUrl}
+                alt="Original"
+                className="block h-auto max-h-full w-auto max-w-full object-contain shadow-stage"
+              />
+            ) : (
+              <canvas
+                ref={canvasRef}
+                aria-label="Preview"
+                className="block h-auto max-h-full w-auto max-w-full object-contain shadow-stage"
+              />
+            )}
+            {!hasPreview && <p className="text-muted">Preparing preview…</p>}
+            {isSample && hasPreview && (
+              <span className="absolute bottom-3 left-3 rounded-sm border border-line bg-surface-overlay px-2 py-1 text-caption">
+                Sample Scene · choose a photo to start
+              </span>
+            )}
+            {view !== 'original' && hasPreview && (
+              <Button className="absolute top-3 right-3" onClick={() => setCropping(true)}>
+                Crop
+              </Button>
+            )}
+          </>
         )}
       </DropZone>
     </Card>

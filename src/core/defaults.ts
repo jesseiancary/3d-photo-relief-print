@@ -32,6 +32,7 @@ export const defaultSettings = (): Settings => ({
   },
   adjust: { blurMm: 0.3, blackPoint: 10, whitePoint: 245, gamma: 1, sharpen: 0.5 },
   tones: { mode: 'photo', count: 8 },
+  crop: { x: 0, y: 0, w: 1, h: 1 },
   filaments: defaultFilaments(),
 })
 
