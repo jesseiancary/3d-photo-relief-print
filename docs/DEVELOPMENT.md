@@ -1,0 +1,123 @@
+# Development
+
+How to get Photo Relief running locally, plus a map of how the engine works. For
+the product-level overview, see the [README](../README.md); for the deep story on
+3MF export, see [bambu-3mf-export.md](bambu-3mf-export.md).
+
+## Prerequisites
+
+- **Node 22** (matches CI).
+- **npm** (ships with Node).
+
+## Setup & run
+
+```bash
+npm install
+npm run dev        # local dev server at the URL Vite prints
+```
+
+That's the whole loop for day-to-day work — Vite hot-reloads as you edit.
+
+## Commands
+
+```bash
+npm install
+npm run dev             # local dev server
+npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
+npm run test:watch      # vitest in watch mode
+npm run coverage        # vitest run with a v8 coverage report → coverage/ (report-only, no gate)
+npm run e2e             # Playwright end-to-end (first run: npx playwright install chromium)
+npm run typecheck       # verify types (tsc -b)
+npm run lint            # oxlint
+npm run format          # format everything with Prettier
+npm run format:check    # check formatting without writing (CI-friendly)
+npm run build           # static multi-file build → dist/
+npm run build:single    # one self-contained HTML (worker inlined) → dist-single/index.html
+npm run build:artifact  # body-only page for publishing as a claude.ai artifact
+npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a raw 8-bit grey file
+```
+
+## How the pipeline works
+
+photo → grey → median blur (mm at print size) → levels (black point, white point,
+midtones) → sharpen → snap each pixel to the nearest **printable tone** → terraced
+mesh → 3MF
+
+- **Tone model** (`src/core/tones.ts`): the first filament is an opaque base. Each
+  later filament is a band of layers, and each layer blends toward that filament's
+  color, reaching full coverage at about TD × 0.1 mm. The app simulates the color at
+  every layer height, picks the heights whose tones are most evenly spaced in
+  CIE L\*, and derives the swap layers from them. Graphic mode prints one fully
+  opaque tone per filament.
+- **Mesh** (`src/core/mesh.ts`): one watertight solid built straight from the tone
+  grid, with flat terraces and vertical walls. It has no T-junctions, and every edge
+  is shared by exactly two triangles. Diagonal-only contacts are removed first.
+- **3MF** (`src/core/threemf.ts`, `src/core/template.ts`): two modes.
+  - **Bambu project** (default): the mesh as a referenced object plus a real project
+    the user saved from their slicer (a _slicer template_,
+    `src/core/defaultTemplate.json` or one imported in the app). The template's
+    `project_settings.config` is reused verbatim except the first N filament slots
+    are recolored to the stack and `layer_height`/`initial_layer_print_height` are
+    set to ours; the template's `Application` tag is copied onto the model. Bambu
+    Studio **drops all config — swaps included — unless that tag reads
+    `BambuStudio-<version>`** (`_handle_end_metadata` in `bbs_3mf.cpp`), which is why
+    we can't synthesise the config and must reuse a real project. Also writes
+    `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml`
+    (the swaps). `[Content_Types].xml` must **not** declare the JSON
+    `project_settings.config` as `application/xml`, or the loader XML-parses JSON and
+    drops config.
+  - **Plain geometry**: a bare core-spec 3MF for other slicers, with
+    `swap-instructions.txt`.
+
+  See [bambu-3mf-export.md](bambu-3mf-export.md) for the full story on the slicer's
+  config-loading rules.
+
+- **Step wedge**: one row per filament band, one 8 mm patch per layer, so you can
+  check TD values against a real print.
+
+Processing runs in a Web Worker (`src/worker`) and falls back to the main thread if
+workers are blocked.
+
+## Project layout
+
+- **`src/core/`** — the whole engine: pure, framework-free functions over typed
+  arrays (pipeline, tones, mesh, 3MF, image ops). Kept pure so the same code runs in
+  the browser, the Web Worker, the Node CLI, and tests.
+- **`src/worker/`** — the message protocol, the `Engine` client, and the handler
+  (the same `createHandler` also runs on the main thread as a fallback).
+- **`src/components/` + `src/features/` + `src/hooks/` + `src/lib/` + `src/App.tsx`**
+  — the React layer.
+- **`scripts/cli.ts`** — the headless pipeline for reproducing any result off the
+  browser.
+
+`CLAUDE.md` at the repo root has the full architecture tour.
+
+## Testing
+
+Three layers (full conventions in [.claude/rules/testing.md](../.claude/rules/testing.md)):
+
+- **Unit (Node, the default):** pure `src/core/` logic and extracted helpers. Tests
+  sit next to their module as `*.test.ts`.
+- **Hook/component (jsdom):** opt in per-file with `// @vitest-environment jsdom` on
+  line 1; uses `@testing-library/react`.
+- **End-to-end (Playwright):** specs in `e2e/` run against `npm run dev` — canvas
+  painting, the real Web Worker round-trip, and the file download → 3MF.
+
+Coverage (`npm run coverage`, v8) is **report-only** — CI publishes the report as an
+artifact but there's no threshold gating the build.
+
+## Known limits
+
+- The Bambu export reuses a slicer template (built-in default is a Bambu Lab P2S
+  0.4 nozzle, 0.08 mm, 100% infill, 1 wall project). Import your own via the Slicer
+  template panel for a different printer. Extra template slots beyond the stack are
+  left unused; if the stack has more filaments than the template, save a template
+  with more filaments. The template's Application version should be ≤ your installed
+  slicer, or it shows a "newer version" dialog.
+- PrusaSlicer color changes are not written yet; use the Plain 3MF export with
+  swap-instructions.txt.
+- Inside a claude.ai artifact, the host's download prompt doesn't accept `.3mf`, so
+  the file arrives wrapped in a `.zip`.
+- No saved projects yet. Filament profiles are kept in localStorage, with JSON
+  import and export.
+- HEIC photos need converting to JPEG first.

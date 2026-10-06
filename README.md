@@ -1,45 +1,101 @@
 # Photo Relief
 
-Turns a photo into a layered multi-filament relief (HueForge-style) and exports a 3MF. Everything runs in the browser; no backend.
+**A browser-only tool that turns a photo into a 3D-printable, multi-color relief.**
 
-## Pipeline
+Upload a photo and Photo Relief converts it into a layered, multi-filament height
+map — the [HueForge](https://shop.thehueforge.com/) style of print where stacked
+bands of colored filament reproduce the image — then exports a print-ready 3MF you
+can open directly in a slicer. There's no backend: all of the image processing, the
+perceptual color modeling, and the watertight mesh generation run client-side in the
+browser, off the main thread in a Web Worker. Your photos never leave your device.
 
-photo → grey → median blur (mm at print size) → levels (black point, white point, midtones) → sharpen → snap each pixel to the nearest **printable tone** → terraced mesh → 3MF
+## Demo
 
-- **Tone model** (`src/core/tones.ts`): the first filament is an opaque base. Each later filament is a band of layers, and each layer blends toward that filament's color, reaching full coverage at about TD × 0.1 mm. The app simulates the color at every layer height, picks the heights whose tones are most evenly spaced in CIE L*, and derives the swap layers from them. Graphic mode prints one fully opaque tone per filament.
-- **Mesh** (`src/core/mesh.ts`): one watertight solid built straight from the tone grid, with flat terraces and vertical walls. It has no T-junctions, and every edge is shared by exactly two triangles. Diagonal-only contacts are removed first.
-- **3MF** (`src/core/threemf.ts`, `src/core/template.ts`): two modes.
-  - **Bambu project** (default): the mesh as a referenced object plus a real project the user saved from their slicer (a _slicer template_, `src/core/defaultTemplate.json` or one imported in the app). The template's `project_settings.config` is reused verbatim except the first N filament slots are recolored to the stack and `layer_height`/`initial_layer_print_height` are set to ours; the template's `Application` tag is copied onto the model. Bambu Studio **drops all config — swaps included — unless that tag reads `BambuStudio-<version>`** (`_handle_end_metadata` in `bbs_3mf.cpp`), which is why we can't synthesise the config and must reuse a real project. Also writes `model_settings.config`, `slice_info.config`, and `custom_gcode_per_layer.xml` (the swaps). `[Content_Types].xml` must **not** declare the JSON `project_settings.config` as `application/xml`, or the loader XML-parses JSON and drops config.
-  - **Plain geometry**: a bare core-spec 3MF for other slicers, with `swap-instructions.txt`.
+<!-- DEMO URL: paste the deployed link below -->
 
-  See [docs/bambu-3mf-export.md](docs/bambu-3mf-export.md) for the full story on the slicer's config-loading rules.
+🔗 **[Live demo](https://3d-photo.jesseiancary.com/)**
 
-- **Step wedge**: one row per filament band, one 8 mm patch per layer, so you can check TD values against a real print.
+<p><em>Original photo</em></p>
 
-Processing runs in a Web Worker (`src/worker`) and falls back to the main thread if workers are blocked.
+<a href="docs/images/photo-relief-original.png"><img src="docs/images/photo-relief-original.png" alt="Photo Relief app with the original source photo loaded — a sleeping swaddled newborn" width="1200"></a>
 
-## Commands
+<p><em>Print preview — the layered multi-filament relief</em></p>
 
-```bash
-npm install
-npm run dev             # local dev server
-npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
-npm run test:watch      # vitest in watch mode
-npm run coverage        # vitest run with a v8 coverage report → coverage/
-npm run e2e             # Playwright end-to-end (needs: npx playwright install chromium)
-npm run lint            # oxlint
-npm run format          # format everything with Prettier
-npm run format:check    # check formatting without writing (CI-friendly)
-npm run build           # static multi-file build → dist/
-npm run build:single    # one self-contained HTML → dist-single/index.html
-npm run build:artifact  # body-only page for publishing as a claude.ai artifact
-npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a raw 8-bit grey file
-```
+<a href="docs/images/photo-relief-print.png"><img src="docs/images/photo-relief-print.png" alt="The same app showing the Print preview — the photo quantized into evenly-spaced printable tones ready to export as a layered relief" width="1200"></a>
 
-## Known limits / next steps
+## Highlights
 
-- The Bambu export reuses a slicer template (built-in default is a Bambu Lab P2S 0.4 nozzle, 0.08 mm, 100% infill, 1 wall project). Import your own via the Slicer template panel for a different printer. Extra template slots beyond the stack are left unused; if the stack has more filaments than the template, save a template with more filaments. The template's Application version should be ≤ your installed slicer, or it shows a "newer version" dialog.
-- PrusaSlicer color changes are not written yet; use the Plain 3MF export with swap-instructions.txt.
-- Inside a claude.ai artifact, the host's download prompt doesn't accept `.3mf`, so the file arrives wrapped in a `.zip`.
-- No cropping and no saved projects yet. Filament profiles are kept in localStorage, with JSON import and export.
-- HEIC photos need converting to JPEG first.
+- **Perceptually-even color banding.** Rather than slicing the image into equal
+  height steps, the engine simulates the printed color at every layer height and
+  chooses filament swaps so the resulting tones are evenly spaced in **CIE L\***
+  (perceptual lightness) — the bands look even to the eye, not just on paper.
+- **Guaranteed watertight meshes.** Geometry is built as a single manifold solid:
+  no T-junctions, every edge shared by exactly two triangles, diagonal-only
+  pinch-points removed before walls go up. Slicers never choke on it.
+- **Real-world 3MF export.** Produces Bambu Studio project files that survive the
+  slicer's strict, undocumented config-loading rules (so colors and layer settings
+  actually import), plus a plain-geometry mode for other slicers.
+- **Runs fully offline.** A Web Worker keeps the UI responsive during heavy
+  processing, with an automatic main-thread fallback for sandboxes that block
+  workers.
+- **Reproducible headless pipeline.** A Node CLI runs the exact same engine without
+  a browser, so any result can be regenerated and tested from the command line.
+
+## Tech stack
+
+| Area        | Choices                                                        |
+| ----------- | -------------------------------------------------------------- |
+| Language    | TypeScript                                                     |
+| UI          | React 19                                                       |
+| Build       | Vite 8                                                         |
+| Styling     | Tailwind CSS v4 (CSS-first — no `tailwind.config.js`)          |
+| Concurrency | Web Workers (with a main-thread fallback)                      |
+| Testing     | Vitest (Node unit + jsdom component/hook) and Playwright (e2e) |
+| Tooling     | oxlint, Prettier, GitHub Actions CI                            |
+
+The dependency footprint is deliberately small — the only runtime dependencies are
+`clsx`, `tailwind-merge`, and `fflate` (ZIP for the 3MF container). The image
+pipeline, color science, and mesh generation are all hand-written over typed arrays.
+
+## Engineering tradeoffs
+
+A few decisions worth calling out, and what they cost:
+
+- **A pure, framework-free core.** The entire engine (`src/core/`) is pure functions
+  over typed arrays — no DOM, no React, no worker APIs. That's more boilerplate (data
+  is threaded in explicitly, with injection seams for I/O) but it means one
+  implementation runs unchanged in four places: the browser, the Web Worker, the Node
+  CLI, and the unit tests. Every stage is testable in isolation.
+- **Browser-only, for now.** Shipping without a backend means zero hosting cost and
+  real privacy — photos are processed entirely on-device — at the cost of no accounts
+  or server-side saved projects yet. The architecture is kept SSR-friendly so it can
+  grow into a Next.js + accounts app without a rewrite.
+- **Reusing a real slicer project instead of synthesizing one.** Bambu Studio
+  silently discards configuration it didn't write, so the exporter splices the mesh
+  into a genuine saved project file rather than generating config from scratch. Less
+  elegant, but it's the only approach that imports with colors intact — the kind of
+  constraint you only find by reading the slicer's source.
+- **Report-only test coverage.** CI publishes a coverage report as a build artifact
+  but doesn't fail the build on a threshold — a pragmatic call that keeps the gate
+  honest while the suite is still growing.
+
+## Roadmap
+
+Where this is headed:
+
+- **Backend + user accounts** — server-side storage for images, the filament-profile
+  library, and slicer templates (today these are localStorage / JSON).
+- **Next.js** — SSR/RSC plus authentication, building on the kept-pure core.
+- **shadcn/ui** — for the account and library CRUD screens, layered on the existing
+  Tailwind token system.
+- **Saved projects** — building on the recently-added interactive photo crop.
+- **PrusaSlicer color-change export** — today PrusaSlicer users take the plain 3MF
+  plus a swap-instructions file.
+- **HEIC support** — currently HEIC photos must be converted to JPEG first.
+- **A coverage gate** — once the suite stabilizes.
+
+---
+
+Want to run it locally, read the architecture, or contribute? See
+**[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**. The gory details of why 3MF export
+works the way it does are in **[docs/bambu-3mf-export.md](docs/bambu-3mf-export.md)**.
