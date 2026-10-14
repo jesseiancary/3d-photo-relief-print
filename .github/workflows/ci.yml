@@ -39,7 +39,7 @@ jobs:
       - run: npm run format:check
 
   typecheck:
-    name: Typecheck (tsc -b)
+    name: Typecheck (tsc)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx tsc -b
+      - run: npm run typecheck
 
   test:
     name: Test (vitest)
@@ -71,7 +71,7 @@ jobs:
           retention-days: 14
 
   build:
-    name: Build (vite)
+    name: Build (next)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,7 +81,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm run build:single
 
   e2e:
     name: E2E (playwright)
