@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-// E2E against the real Vite dev server. These cover what jsdom can't: canvas painting,
+// E2E against the real Next dev server. These cover what jsdom can't: canvas painting,
 // the Web Worker round-trip, and the actual file download → 3MF.
 export default defineConfig({
   testDir: './e2e',
@@ -9,13 +9,13 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
     command: 'npm run dev',
-    url: 'http://localhost:5173',
+    url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

@@ -2,7 +2,11 @@ import type { SlicerTemplate } from '../core/template'
 import type { Settings } from '../core/types'
 import { createHandler } from './handler'
 import type { ExportResult, PreviewResult, Request, Response } from './protocol'
-import ReliefWorker from './relief.worker?worker&inline'
+
+// Bundler-neutral worker instantiation (Turbopack/webpack/Vite all understand this form). The
+// Engine falls back to running createHandler on the main thread if construction throws.
+const makeReliefWorker = () =>
+  new Worker(new URL('./relief.worker.ts', import.meta.url), { type: 'module' })
 
 type Listener = (r: Response) => void
 
@@ -31,7 +35,7 @@ export class Engine {
   usingWorker = true
 
   constructor(deps: EngineDeps = {}) {
-    const makeWorker = deps.workerFactory ?? (() => new ReliefWorker())
+    const makeWorker = deps.workerFactory ?? makeReliefWorker
     this.decode = deps.decode ?? ((image) => createImageBitmap(image))
     try {
       const w = makeWorker()
