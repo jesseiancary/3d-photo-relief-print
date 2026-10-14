@@ -3,10 +3,14 @@ node_modules/
 
 # Build output
 /dist/
-/dist-single/
 /build/
+/out/
 
-# Vite / TypeScript
+# Next.js
+/.next/
+next-env.d.ts
+
+# TypeScript
 .vite/
 *.tsbuildinfo
 

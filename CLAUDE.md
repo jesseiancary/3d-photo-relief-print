@@ -19,19 +19,18 @@ Currently browser-only, but this is expected to grow into a full multi-user app.
 
 ```bash
 npm install
-npm run dev             # local dev server
+npm run dev             # Next.js dev server → http://localhost:3000
+npm run build           # Next.js production build → .next/
+npm start               # serve the production build
 npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
 npm run test:watch      # vitest in watch mode
 npm run coverage        # vitest run with a v8 coverage report → coverage/ (report-only, no gate)
 npm run e2e             # Playwright end-to-end (first run: npx playwright install chromium)
 npx vitest run src/core/mesh.test.ts   # a single test file
-npm run typecheck       # verify types
+npm run typecheck       # tsc --noEmit across the app/node/test/e2e tsconfig projects
 npm run lint            # oxlint
 npm run format          # format everything with Prettier
 npm run format:check    # verify formatting (no writes)
-npm run build           # static multi-file build → dist/
-npm run build:single    # one self-contained HTML (worker inlined) → dist-single/index.html
-npm run build:artifact  # body-only page for publishing as a claude.ai artifact
 npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a raw 8-bit grey file
 ```
 
