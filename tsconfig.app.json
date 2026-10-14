@@ -1,31 +1,22 @@
 {
+  // Shared base for tsconfig.test.json only (the Next app config is the root tsconfig.json now).
+  // Carries the DOM lib + strict flags the specs type-check under; tsconfig.test.json supplies its
+  // own `types`, `include`, and tsBuildInfoFile.
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client"],
-    "allowArbitraryExtensions": true,
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "paths": { "@/*": ["./src/*"] },
     "resolveJsonModule": true,
     "skipLibCheck": true,
-
-    /* Path alias: @/ -> src/ (paths resolve relative to this tsconfig under moduleResolution: bundler) */
-    "paths": { "@/*": ["./src/*"] },
-
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "moduleDetection": "force",
     "noEmit": true,
-    "jsx": "react-jsx",
-
-    /* Linting */
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
-  },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test/**"]
+  }
 }
