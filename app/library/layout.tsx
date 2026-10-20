@@ -16,12 +16,24 @@ export default async function LibraryLayout({ children }: { children: ReactNode 
   return (
     <div className="min-h-dvh">
       <header className="flex items-center justify-between border-b border-line px-6 py-3">
-        <nav className="flex items-center gap-4">
+        <nav className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link href="/" className="text-title">
             Photo Relief
           </Link>
           <Link href="/library" className="text-label text-muted hover:text-foreground">
             Library
+          </Link>
+          <Link href="/library/templates" className="text-label text-muted hover:text-foreground">
+            Templates
+          </Link>
+          <Link href="/library/filaments" className="text-label text-muted hover:text-foreground">
+            Filaments
+          </Link>
+          <Link href="/library/printers" className="text-label text-muted hover:text-foreground">
+            Printers
+          </Link>
+          <Link href="/library/settings" className="text-label text-muted hover:text-foreground">
+            Preferences
           </Link>
         </nav>
         <div className="flex items-center gap-3">

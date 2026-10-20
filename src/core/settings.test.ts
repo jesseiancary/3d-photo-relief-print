@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
-import { defaultSettings } from '@/core/defaults'
-import type { Settings } from '@/core/types'
-
-import { mergeSettings } from './useSettings'
+import { defaultSettings } from './defaults'
+import { mergeSettings } from './settings'
+import type { Settings } from './types'
 
 describe('mergeSettings', () => {
   it('returns the defaults when the persisted value is empty', () => {
