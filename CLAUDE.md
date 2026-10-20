@@ -12,7 +12,7 @@ Currently browser-only, but this is expected to grow into a full multi-user app.
 
 - **Backend + accounts** — user login, and per-user server storage for images, the filament-profile library, and the slicer-template library (today these are localStorage/JSON only).
 - **Next.js** — likely to be adopted when appropriate (SSR/RSC + auth). New code should stay SSR-friendly: keep `src/core/` pure and framework-free, avoid runtime CSS-in-JS.
-- **shadcn/ui** — will definitely be adopted for the account/library/CRUD UI. It layers on the existing Tailwind setup (Radix primitives + our `@theme` tokens), so **keep Tailwind and its token system** — do not revert to CSS/SCSS or swap in a full component kit.
+- **shadcn/ui** — planned for the account/library/CRUD UI, **not yet adopted**. The library screens ([app/library/](app/library/)) are currently built from the existing token-backed primitives in [src/components/](src/components/) and hold no hardcoded styling, so shadcn can be layered in later with contained rework (swap a primitive's internals; the feature call sites don't change). It layers on the existing Tailwind setup (Radix primitives + our `@theme` tokens), so **keep Tailwind and its token system** — do not revert to CSS/SCSS or swap in a full component kit. Treat `shadcn init` as a deliberate, standalone step reconciled with the token system (it rewrites global CSS / introduces its own token convention) — never bundle it into a feature change.
 - **Self-contained artifact goes away** — the single-file build (`build:single` / `build:artifact`) will likely be abandoned once the backend lands, so it no longer needs to constrain dependency/bundle choices.
 
 ## Commands

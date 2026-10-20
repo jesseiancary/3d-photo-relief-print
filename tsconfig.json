@@ -39,12 +39,11 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "src/**/*.test.ts",
-    "src/**/*.test.tsx",
-    "src/test/**",
-    "e2e",
-    "scripts"
-  ]
+  // Test files are intentionally included (not excluded): VS Code only auto-discovers
+  // `tsconfig.json`, so excluding *.test.* here would orphan those files into an inferred project
+  // with no `@/*` paths (unresolved-import errors in the editor). Referencing tsconfig.test.json
+  // instead isn't an option — TS requires referenced projects to be `composite` + emit, which the
+  // noEmit configs can't be. They cost a little `next build` typecheck time but are never bundled
+  // (no route imports them). tsconfig.test.json remains the tuned gate with the test-only types.
+  "exclude": ["node_modules", "e2e", "scripts"]
 }
