@@ -26,6 +26,8 @@ export function useSettings() {
   ) => setSettings((s) => ({ ...s, [k]: { ...s[k], ...patch } }))
   const setFilaments = (filaments: Settings['filaments']) =>
     setSettings((s) => ({ ...s, filaments }))
+  // Replace the whole object at once — used to hydrate the working copy from a saved project.
+  const replaceSettings = (next: Settings) => setSettings(next)
 
-  return { settings, defs, set, setFilaments }
+  return { settings, defs, set, setFilaments, replaceSettings }
 }

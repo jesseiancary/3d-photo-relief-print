@@ -23,6 +23,9 @@ export default async function LibraryLayout({ children }: { children: ReactNode 
           <Link href="/library" className="text-label text-muted hover:text-foreground">
             Library
           </Link>
+          <Link href="/library/projects" className="text-label text-muted hover:text-foreground">
+            Projects
+          </Link>
           <Link href="/library/templates" className="text-label text-muted hover:text-foreground">
             Templates
           </Link>

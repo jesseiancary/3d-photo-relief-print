@@ -1,5 +1,7 @@
 export { useCanvasPreview } from './useCanvasPreview'
-export { useReliefEngine, type Busy } from './useReliefEngine'
+export { useProject } from './useProject'
+export { useProjectHydration } from './useProjectHydration'
+export { useReliefEngine, type Busy, type LastExport } from './useReliefEngine'
 export { useSettings } from './useSettings'
 export { type Say, type Status, useStatus } from './useStatus'
 export { useTemplate } from './useTemplate'

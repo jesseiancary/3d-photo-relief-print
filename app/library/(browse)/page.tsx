@@ -1,7 +1,12 @@
 import Link from 'next/link'
 
 import { Card } from '@/components/Card'
-import { listFilamentProfiles, listPrinterProfiles, listTemplates } from '@/server/data'
+import {
+  listFilamentProfiles,
+  listPrinterProfiles,
+  listProjects,
+  listTemplates,
+} from '@/server/data'
 import { currentUserId } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
@@ -11,13 +16,20 @@ export const dynamic = 'force-dynamic'
 export default async function LibraryPage() {
   const userId = await currentUserId()
 
-  const [templates, filaments, printers] = await Promise.all([
+  const [projects, templates, filaments, printers] = await Promise.all([
+    listProjects(userId),
     listTemplates(userId),
     listFilamentProfiles(userId),
     listPrinterProfiles(userId),
   ])
 
   const sections = [
+    {
+      href: '/library/projects',
+      title: 'Projects',
+      desc: 'Saved images + settings you can reopen in the tool.',
+      count: `${projects.length} saved`,
+    },
     {
       href: '/library/templates',
       title: 'Slicer templates',
@@ -49,7 +61,7 @@ export default async function LibraryPage() {
       <div className="flex flex-col gap-1">
         <h2 className="text-heading uppercase text-muted">Your library</h2>
         <p className="text-caption text-muted">
-          Projects with saved images arrive next. Manage your reusable building blocks here.
+          Your projects and reusable building blocks, saved to your account.
         </p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -66,12 +78,6 @@ export default async function LibraryPage() {
             </Card>
           </Link>
         ))}
-        <Card className="flex h-full flex-col gap-1 p-4 opacity-60">
-          <h3 className="text-label font-semibold">Projects</h3>
-          <p className="text-caption text-muted">
-            Image + settings, saved per project. Coming soon.
-          </p>
-        </Card>
       </div>
     </div>
   )

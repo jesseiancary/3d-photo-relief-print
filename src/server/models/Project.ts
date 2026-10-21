@@ -46,10 +46,16 @@ const ProjectSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: 'users', required: true, index: true },
     name: { type: String, required: true, trim: true },
-    imageKey: { type: String, default: null },
+    // Client-generated UUID (deliberately NOT the Mongo _id — keeps blob paths DB-agnostic for future
+    // migrations) that namespaces all of this project's blobs under one folder: `<assetKey>/<uuid>.<ext>`.
+    // Set once on create and never changed; lets deleteProject sweep the whole folder by prefix.
+    assetKey: { type: String, default: null },
+    // Public Vercel Blob URLs — used both to display the image and to delete it (`del(url)`); bytes
+    // never live in Mongo. `imageSize` is the source file's byte length.
+    imageUrl: { type: String, default: null },
     imageName: { type: String, default: null },
     imageSize: { type: Number, default: null },
-    thumbKey: { type: String, default: null },
+    thumbUrl: { type: String, default: null },
     settings: { type: SettingsSchema, required: true },
     templateId: { type: Schema.Types.ObjectId, ref: 'Template', default: null },
   },

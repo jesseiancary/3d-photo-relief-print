@@ -1,9 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
+import { defaultSettings } from '@/core/defaults'
+
 import {
+  exportCreateSchema,
   filamentProfileCreateSchema,
   filamentSchema,
   preferencesUpdateSchema,
+  projectCreateSchema,
+  settingsSchema,
   templateCreateSchema,
 } from './library-types'
 
@@ -49,8 +54,19 @@ describe('filamentSchema', () => {
 })
 
 describe('filamentProfileCreateSchema', () => {
-  it('requires at least one filament', () => {
+  const fil = { name: 'Black', color: '#111', td: 0.6 }
+
+  it('rejects a stack below the two-filament minimum', () => {
     expect(filamentProfileCreateSchema.safeParse({ name: 'x', filaments: [] }).success).toBe(false)
+    expect(filamentProfileCreateSchema.safeParse({ name: 'x', filaments: [fil] }).success).toBe(
+      false,
+    )
+  })
+
+  it('accepts a two-filament stack', () => {
+    expect(
+      filamentProfileCreateSchema.safeParse({ name: 'x', filaments: [fil, fil] }).success,
+    ).toBe(true)
   })
 })
 
@@ -62,5 +78,70 @@ describe('preferencesUpdateSchema', () => {
 
   it('rejects an unknown enum value', () => {
     expect(preferencesUpdateSchema.safeParse({ theme: 'neon' }).success).toBe(false)
+  })
+})
+
+describe('settingsSchema', () => {
+  it('accepts the default settings and strips filament ids', () => {
+    const parsed = settingsSchema.parse(defaultSettings())
+    expect(parsed.filaments.length).toBeGreaterThan(0)
+    expect(parsed.filaments.every((f) => !('id' in f))).toBe(true)
+  })
+
+  it('rejects an empty filament stack', () => {
+    expect(settingsSchema.safeParse({ ...defaultSettings(), filaments: [] }).success).toBe(false)
+  })
+
+  it('rejects an unknown tone mode', () => {
+    const bad = { ...defaultSettings(), tones: { mode: 'sketch', count: 8 } }
+    expect(settingsSchema.safeParse(bad).success).toBe(false)
+  })
+})
+
+describe('projectCreateSchema', () => {
+  const assetKey = 'f5983ebc-a5d8-42ff-a094-4da2dfbe427e'
+
+  it('accepts a minimal project and defaults thumb/template/size to null', () => {
+    const parsed = projectCreateSchema.parse({
+      assetKey,
+      name: 'x',
+      imageUrl: 'https://blob.example/i',
+      settings: defaultSettings(),
+    })
+    expect(parsed.thumbUrl).toBeNull()
+    expect(parsed.templateId).toBeNull()
+    expect(parsed.imageSize).toBeNull()
+  })
+
+  it('rejects a non-URL imageUrl', () => {
+    const bad = { assetKey, name: 'x', imageUrl: 'not a url', settings: defaultSettings() }
+    expect(projectCreateSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('rejects a non-UUID assetKey (it becomes a blob path prefix)', () => {
+    const bad = {
+      assetKey: '../escape',
+      name: 'x',
+      imageUrl: 'https://blob.example/i',
+      settings: defaultSettings(),
+    }
+    expect(projectCreateSchema.safeParse(bad).success).toBe(false)
+  })
+})
+
+describe('exportCreateSchema', () => {
+  it('defaults triangles/byteSize to 0', () => {
+    const parsed = exportCreateSchema.parse({
+      filename: 'a.3mf',
+      threeMfUrl: 'https://blob.example/3mf',
+      settings: defaultSettings(),
+    })
+    expect(parsed.triangles).toBe(0)
+    expect(parsed.byteSize).toBe(0)
+  })
+
+  it('rejects a non-URL threeMfUrl', () => {
+    const bad = { filename: 'a.3mf', threeMfUrl: 'nope', settings: defaultSettings() }
+    expect(exportCreateSchema.safeParse(bad).success).toBe(false)
   })
 })

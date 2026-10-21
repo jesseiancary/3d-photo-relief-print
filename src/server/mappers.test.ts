@@ -1,57 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
 import { defaultSettings } from '@/core/defaults'
-import type { Settings } from '@/core/types'
+import { settingsToDoc } from '@/core/settings'
 import { DEFAULT_PREFERENCES } from '@/lib/library-types'
 import { filFromPresets } from '@/test/helpers'
 
 import {
+  exportToDTO,
   filamentProfileToDTO,
   preferencesToDTO,
   printerProfileToDTO,
-  settingsFromDoc,
-  settingsToDoc,
+  projectToDTO,
   templateToDTO,
 } from './mappers'
-
-describe('settings mappers', () => {
-  it('round-trips Settings through a doc, re-minting fresh filament ids', () => {
-    const s: Settings = { ...defaultSettings(), filaments: filFromPresets([0, 1, 3]) }
-    const doc = settingsToDoc(s)
-
-    // Stored filaments carry no volatile id.
-    expect(doc.filaments.every((f) => !('id' in f))).toBe(true)
-    expect(doc.filaments).toHaveLength(3)
-
-    let seq = 0
-    const back = settingsFromDoc(doc, () => `m${seq++}`)
-
-    // Fresh ids, minted by the injected generator (not the originals).
-    expect(back.filaments.map((f) => f.id)).toEqual(['m0', 'm1', 'm2'])
-    // Everything except the id is preserved field-for-field.
-    expect(back.filaments.map(({ id: _id, ...rest }) => rest)).toEqual(
-      s.filaments.map(({ id: _id, ...rest }) => rest),
-    )
-    expect(back.print).toEqual(s.print)
-    expect(back.adjust).toEqual(s.adjust)
-    expect(back.tones).toEqual(s.tones)
-    expect(back.crop).toEqual(s.crop)
-  })
-
-  it('fills missing slices from defaults (tolerant of partial/old docs)', () => {
-    const d = defaultSettings()
-    const back = settingsFromDoc({ print: { heightIn: 12 } })
-    expect(back.print.heightIn).toBe(12) // the stored field wins
-    expect(back.print.pitchMm).toBe(d.print.pitchMm) // missing field falls back
-    expect(back.adjust).toEqual(d.adjust) // missing slice falls back
-    expect(back.filaments).toHaveLength(d.filaments.length) // no stored filaments → defaults
-  })
-
-  it('normalises an undefined stored `layers` to null', () => {
-    const back = settingsFromDoc({ filaments: [{ name: 'X', color: '#fff', td: 2 }] })
-    expect(back.filaments[0].layers).toBeNull()
-  })
-})
 
 describe('templateToDTO', () => {
   it('summarises from the British `filament_colour` key (byte-for-byte protocol key)', () => {
@@ -120,6 +81,73 @@ describe('printerProfileToDTO', () => {
       firstLayerMm: 0.16,
       pitchMm: 0.1,
       cornerRadius: 2,
+    })
+  })
+})
+
+describe('projectToDTO', () => {
+  it('maps fields, stringifies id/templateId/dates, and returns id-less settings', () => {
+    const created = new Date('2026-01-02T03:04:05.000Z')
+    const dto = projectToDTO({
+      _id: 'p1',
+      assetKey: 'folder-uuid',
+      name: 'Dog',
+      imageUrl: 'https://blob/img',
+      thumbUrl: 'https://blob/thumb',
+      imageName: 'dog.jpg',
+      imageSize: 1234,
+      settings: settingsToDoc({ ...defaultSettings(), filaments: filFromPresets([0, 1, 3]) }),
+      templateId: { toString: () => 'abc' },
+      createdAt: created,
+      updatedAt: created,
+    })
+    expect(dto.id).toBe('p1')
+    expect(dto.assetKey).toBe('folder-uuid')
+    expect(dto.imageUrl).toBe('https://blob/img')
+    expect(dto.thumbUrl).toBe('https://blob/thumb')
+    expect(dto.imageSize).toBe(1234)
+    expect(dto.templateId).toBe('abc')
+    expect(dto.createdAt).toBe('2026-01-02T03:04:05.000Z')
+    expect(dto.settings.filaments).toHaveLength(3)
+    expect(dto.settings.filaments.every((f) => !('id' in f))).toBe(true)
+  })
+
+  it('defaults a missing image/thumb/templateId', () => {
+    const now = new Date()
+    const dto = projectToDTO({
+      _id: 'p2',
+      name: 'x',
+      settings: settingsToDoc(defaultSettings()),
+      createdAt: now,
+      updatedAt: now,
+    })
+    expect(dto.imageUrl).toBe('')
+    expect(dto.thumbUrl).toBeNull()
+    expect(dto.templateId).toBeNull()
+    expect(dto.assetKey).toBe('') // missing assetKey → empty string
+  })
+})
+
+describe('exportToDTO', () => {
+  it('maps fields and stringifies id/projectId/date', () => {
+    expect(
+      exportToDTO({
+        _id: 'e1',
+        projectId: { toString: () => 'p1' },
+        filename: 'dog.3mf',
+        threeMfUrl: 'https://blob/3mf',
+        triangles: 1000,
+        byteSize: 5000,
+        createdAt: new Date('2026-01-02T03:04:05.000Z'),
+      }),
+    ).toEqual({
+      id: 'e1',
+      projectId: 'p1',
+      filename: 'dog.3mf',
+      threeMfUrl: 'https://blob/3mf',
+      triangles: 1000,
+      byteSize: 5000,
+      createdAt: '2026-01-02T03:04:05.000Z',
     })
   })
 })

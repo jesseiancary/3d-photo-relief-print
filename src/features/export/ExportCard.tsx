@@ -92,7 +92,7 @@ export function ExportCard({
         <p
           className={cn(
             'm-0 grow basis-full text-body',
-            status.tone === 'ok' ? 'text-ok' : 'text-danger',
+            status.tone === 'ok' ? 'text-ok' : 'text-destructive',
           )}
           role="status"
         >

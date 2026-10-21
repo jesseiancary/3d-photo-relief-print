@@ -11,24 +11,83 @@ import { PhotoSection } from '@/features/photo'
 import { StackDiagram, SwapTable } from '@/features/plan'
 import { PreviewCard, type View } from '@/features/preview'
 import { PrintGeometrySection } from '@/features/print'
+import { ProjectSection } from '@/features/project'
 import { SlicerTemplateSection } from '@/features/template'
 import { TonesSection } from '@/features/tones'
-import { useCanvasPreview, useReliefEngine, useSettings, useStatus, useTemplate } from '@/hooks'
+import {
+  useCanvasPreview,
+  useProject,
+  useProjectHydration,
+  useReliefEngine,
+  useSettings,
+  useStatus,
+  useTemplate,
+} from '@/hooks'
 import { slug } from '@/lib/slug'
 
 const BED_MM = 250
 
-export default function App() {
+export default function App({ projectId }: { projectId?: string }) {
   const { status, say, clear } = useStatus()
-  const { settings, defs, set, setFilaments } = useSettings()
-  const { template, summary: tpl, isCustom, importTemplate, resetTemplate } = useTemplate(say)
+  const { settings, defs, set, setFilaments, replaceSettings } = useSettings()
+  const project = useProject()
+  const {
+    template,
+    templateId,
+    templates,
+    summary: tpl,
+    isCustom,
+    importTemplate,
+    resetTemplate,
+    selectTemplate,
+  } = useTemplate(say)
+
+  // Hydrating a saved project should keep its stored crop; this flag lets onImageLoad skip the reset
+  // once, for the hydration load. Ordering matters: hydratingRef → onImageLoad → engine → hydration.
+  const hydratingRef = useRef(false)
+  const onImageLoad = () => {
+    if (hydratingRef.current) {
+      hydratingRef.current = false
+      return
+    }
+    set('crop', defs.crop)
+  }
   const engine = useReliefEngine({
     settings,
     template,
     say,
     clear,
-    onImageLoad: () => set('crop', defs.crop),
+    onImageLoad,
+    skipSample: !!projectId,
   })
+  useProjectHydration({
+    projectId,
+    hydratingRef,
+    load: project.load,
+    apply: (p) => {
+      replaceSettings(p.settings)
+      void engine.loadImage(p.image.blob, p.image.name)
+      void selectTemplate(p.templateId)
+    },
+    say,
+  })
+
+  const onSaveProject = async () => {
+    const blob = engine.getImageBlob()
+    if (!blob || !engine.preview || !project.name.trim()) return
+    await project.save({
+      name: project.name.trim(),
+      settings,
+      templateId,
+      imageBlob: blob,
+      imageName: engine.imageName,
+      preview: engine.preview,
+    })
+  }
+  const onSaveExport = async () => {
+    const le = engine.lastExport
+    if (le) await project.saveExport(le.bytes, le.filename, le.triangles, le.settings)
+  }
 
   const [view, setView] = useState<View>('print')
   const [dragging, setDragging] = useState(false)
@@ -126,6 +185,24 @@ export default function App() {
             filamentCount={settings.filaments.length}
             onImport={importTemplate}
             onReset={resetTemplate}
+            templates={templates}
+            templateId={templateId}
+            onSelect={selectTemplate}
+          />
+
+          <ProjectSection
+            isAuthed={project.isAuthed}
+            projectId={project.projectId}
+            name={project.name}
+            onName={project.setName}
+            busy={project.busy}
+            error={project.error}
+            canSave={!!engine.preview}
+            onSave={onSaveProject}
+            exports={project.exports}
+            lastExport={engine.lastExport}
+            onSaveExport={onSaveExport}
+            onRemoveExport={project.removeExport}
           />
         </aside>
 
