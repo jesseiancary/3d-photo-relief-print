@@ -2,8 +2,9 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Optimistic auth gate for /library (Next 16's proxy convention, formerly "middleware"). We use
 // database sessions, which can't be validated on the edge (no DB access), so this only checks for
-// the presence of a session cookie for a fast redirect; the authoritative `await auth()` check
-// lives in app/library/layout.tsx.
+// the presence of a session cookie for a fast redirect. The authoritative `await auth()` check
+// lives in the server components: the (browse) section layout (app/library/(browse)/layout.tsx)
+// and, for the project-open route outside that group, currentUserId() in app/library/[id]/page.tsx.
 const SESSION_COOKIES = ['authjs.session-token', '__Secure-authjs.session-token']
 
 export function proxy(req: NextRequest) {

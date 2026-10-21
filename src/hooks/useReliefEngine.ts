@@ -24,6 +24,17 @@ interface Params {
   engineFactory?: () => Engine
   /** Called whenever a new image finishes loading (used to reset per-image state like the crop). */
   onImageLoad?: () => void
+  /** Skip auto-loading the sample image on mount (set when hydrating a saved project instead). */
+  skipSample?: boolean
+}
+
+/** The most recent 3MF export, retained so it can be saved to a project's history on demand. */
+export interface LastExport {
+  bytes: Uint8Array
+  filename: string
+  triangles: number
+  /** the settings that produced these bytes (snapshotted so later edits don't skew the record) */
+  settings: Settings
 }
 
 /**
@@ -38,6 +49,7 @@ export function useReliefEngine({
   clear,
   engineFactory,
   onImageLoad,
+  skipSample = false,
 }: Params) {
   // The engine is constructed once for the component's lifetime; engineFactory is read only on that
   // first render, so it is intentionally omitted from the deps.
@@ -53,6 +65,9 @@ export function useReliefEngine({
   const [imageVersion, setImageVersion] = useState(0)
   const [title, setTitle] = useState('')
   const [busy, setBusy] = useState<Busy | null>(null)
+  const [lastExport, setLastExport] = useState<LastExport | null>(null)
+  // The source image Blob of the current load, held so a project save can re-upload it.
+  const imageBlobRef = useRef<Blob | null>(null)
 
   useEffect(
     () =>
@@ -71,6 +86,7 @@ export function useReliefEngine({
     async (blob: Blob, name: string, sample = false) => {
       try {
         await engine.load(blob)
+        imageBlobRef.current = blob
         setImageUrl((old) => {
           if (old) URL.revokeObjectURL(old)
           return URL.createObjectURL(blob)
@@ -90,8 +106,8 @@ export function useReliefEngine({
   )
 
   useEffect(() => {
-    void sampleImage().then((b) => loadImage(b, 'Sample Scene', true))
-  }, [loadImage])
+    if (!skipSample) void sampleImage().then((b) => loadImage(b, 'Sample Scene', true))
+  }, [loadImage, skipSample])
 
   useEffect(() => {
     if (imageVersion > 0) engine.preview(settings)
@@ -113,6 +129,12 @@ export function useReliefEngine({
         setBusy({ stage, frac }),
       )
       setBusy({ stage: 'Saving', frac: 1 })
+      setLastExport({
+        bytes: r.bytes,
+        filename: `${fileBase}.3mf`,
+        triangles: r.triangles,
+        settings,
+      })
       const msg = await saveFile(`${fileBase}.3mf`, r.bytes)
       say(exportSummary(msg, r.triangles, r.bytes.length))
     } catch (e) {
@@ -151,5 +173,8 @@ export function useReliefEngine({
     fileBase,
     doExport,
     doWedge,
+    lastExport,
+    /** The source image Blob of the current load (for saving a project); null before any load. */
+    getImageBlob: () => imageBlobRef.current,
   }
 }

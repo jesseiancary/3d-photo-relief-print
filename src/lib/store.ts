@@ -8,17 +8,22 @@
 import type { z } from 'zod'
 
 import {
+  exportDTOSchema,
   filamentProfileDTOSchema,
   preferencesSchema,
   printerProfileDTOSchema,
+  projectDTOSchema,
   templateDTOSchema,
+  templateFullSchema,
+  type ExportInput,
   type FilamentProfileInput,
   type PreferencesDTO,
   type PrinterInput,
+  type ProjectInput,
   type TemplateInput,
 } from './library-types'
 
-export type { FilamentProfileInput, PrinterInput, TemplateInput }
+export type { ExportInput, FilamentProfileInput, PrinterInput, ProjectInput, TemplateInput }
 
 async function req<S extends z.ZodType>(
   url: string,
@@ -53,10 +58,27 @@ const patch = (v: unknown): RequestInit => ({ method: 'PATCH', body: JSON.string
 export const libraryApi = {
   templates: {
     list: () => req('/api/templates', templateDTOSchema.array()),
+    get: (id: string) => req(`/api/templates/${id}`, templateFullSchema),
     create: (input: TemplateInput) => req('/api/templates', templateDTOSchema, post(input)),
     rename: (id: string, name: string) =>
       req(`/api/templates/${id}`, templateDTOSchema, patch({ name })),
     remove: (id: string) => del(`/api/templates/${id}`),
+  },
+  projects: {
+    list: () => req('/api/projects', projectDTOSchema.array()),
+    get: (id: string) => req(`/api/projects/${id}`, projectDTOSchema),
+    create: (input: ProjectInput) => req('/api/projects', projectDTOSchema, post(input)),
+    // assetKey is immutable after create (the server omits it from updates) — keep it out of the type.
+    update: (id: string, patchBody: Partial<Omit<ProjectInput, 'assetKey'>>) =>
+      req(`/api/projects/${id}`, projectDTOSchema, patch(patchBody)),
+    remove: (id: string) => del(`/api/projects/${id}`),
+    exports: {
+      list: (projectId: string) =>
+        req(`/api/projects/${projectId}/exports`, exportDTOSchema.array()),
+      create: (projectId: string, input: ExportInput) =>
+        req(`/api/projects/${projectId}/exports`, exportDTOSchema, post(input)),
+      remove: (exportId: string) => del(`/api/exports/${exportId}`),
+    },
   },
   filamentProfiles: {
     list: () => req('/api/filament-profiles', filamentProfileDTOSchema.array()),
@@ -77,5 +99,9 @@ export const libraryApi = {
     get: () => req('/api/prefs', preferencesSchema),
     update: (patchBody: Partial<PreferencesDTO>) =>
       req('/api/prefs', preferencesSchema, patch(patchBody)),
+  },
+  blob: {
+    // Clean up an orphaned blob (best-effort) when a follow-up doc write fails after upload.
+    remove: (url: string) => del(`/api/blob?url=${encodeURIComponent(url)}`),
   },
 }
