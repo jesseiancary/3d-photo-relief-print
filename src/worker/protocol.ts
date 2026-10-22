@@ -11,6 +11,8 @@ export type Request =
       settings: Settings
       title: string
       template: SlicerTemplate | null
+      /** square bed size (mm) for plate centering; from the selected printer profile */
+      bedMm: number
     }
   | {
       kind: 'wedge'
@@ -18,6 +20,7 @@ export type Request =
       settings: Settings
       title: string
       template: SlicerTemplate | null
+      bedMm: number
     }
 
 export interface PreviewResult {

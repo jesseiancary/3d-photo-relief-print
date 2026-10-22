@@ -5,16 +5,17 @@ import { useId, useState } from 'react'
 import { Button } from '@/components/Button'
 import { Card } from '@/components/Card'
 import { NumberField } from '@/components/NumberField'
+import { DEFAULT_BED_MM } from '@/core/defaults'
 import type { PrinterProfileDTO } from '@/lib/library-types'
 import { libraryApi, type PrinterInput } from '@/lib/store'
 
 import { useAsync } from '../_components/useAsync'
 
-// Defaults for a new printer: the app's print defaults plus the 250mm bed that is hardcoded in the
-// tool today (BED_MM in src/App.tsx — a printer profile is where that becomes per-user config).
+// Defaults for a new printer: the app's print defaults plus the tool's fallback bed (DEFAULT_BED_MM),
+// which the profile makes into saveable per-user config once selected in the tool.
 const BLANK: PrinterInput = {
   name: '',
-  bedMm: 250,
+  bedMm: DEFAULT_BED_MM,
   layerMm: 0.08,
   firstLayerMm: 0.16,
   pitchMm: 0.1,

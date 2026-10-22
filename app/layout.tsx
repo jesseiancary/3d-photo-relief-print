@@ -3,6 +3,8 @@ import '@/index.css'
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
+import { themeNoFlashScript } from '@/lib/prefs'
+
 import { Providers } from './providers'
 
 export const metadata: Metadata = {
@@ -19,6 +21,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        {/* Set <html data-theme> before first paint from the theme mirror so signed-in dark users
+            don't flash white. The script is built from THEME_KEY in src/lib/prefs.ts. */}
+        <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript() }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link

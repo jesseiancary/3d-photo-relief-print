@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { DEFAULT_BED_MM } from '@/core/defaults'
 import type { SlicerTemplate } from '@/core/template'
 import type { Settings } from '@/core/types'
 import { saveFile } from '@/lib/platform'
@@ -18,6 +19,8 @@ export interface Busy {
 interface Params {
   settings: Settings
   template: SlicerTemplate
+  /** square bed size (mm) from the selected printer profile, for 3MF plate centering. */
+  bedMm?: number
   say: Say
   clear: () => void
   /** How to construct the processing engine; defaults to a real Engine. Injectable for tests. */
@@ -45,6 +48,7 @@ export interface LastExport {
 export function useReliefEngine({
   settings,
   template,
+  bedMm = DEFAULT_BED_MM,
   say,
   clear,
   engineFactory,
@@ -125,8 +129,12 @@ export function useReliefEngine({
     setBusy({ stage: 'Starting', frac: 0 })
     clear()
     try {
-      const r = await engine.export(settings, fileBase, plain ? null : template, (stage, frac) =>
-        setBusy({ stage, frac }),
+      const r = await engine.export(
+        settings,
+        fileBase,
+        plain ? null : template,
+        bedMm,
+        (stage, frac) => setBusy({ stage, frac }),
       )
       setBusy({ stage: 'Saving', frac: 1 })
       setLastExport({
@@ -146,7 +154,7 @@ export function useReliefEngine({
   const doWedge = async () => {
     setBusy({ stage: 'Building step wedge', frac: 0.5 })
     try {
-      const r = await engine.wedge(settings, 'step-wedge', template)
+      const r = await engine.wedge(settings, 'step-wedge', template, bedMm)
       const name = wedgeFilename(settings.filaments)
       say(
         `${await saveFile(name, r.bytes)} · ${r.sizeMm[0].toFixed(0)} × ${r.sizeMm[1].toFixed(0)} mm`,

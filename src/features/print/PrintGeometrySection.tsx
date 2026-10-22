@@ -3,6 +3,8 @@ import { NumberField } from '@/components/NumberField'
 import { Section } from '@/components/Section'
 import { Slider } from '@/components/Slider'
 import type { PrintSettings } from '@/core/types'
+import type { PrinterProfileDTO, UnitsPref } from '@/lib/library-types'
+import { formatSize, MM_PER_IN, sizeDigits, toMm, unitLabel } from '@/lib/units'
 
 interface Props {
   print: PrintSettings
@@ -11,6 +13,11 @@ interface Props {
   actualBase: number
   heightMm: number
   widthMm: number
+  units: UnitsPref
+  /** The user's saved printers (empty when signed out) + the active selection, for the picker. */
+  printers: PrinterProfileDTO[]
+  printerId: string | null
+  onSelectPrinter: (id: string | null) => void
   onChange: (patch: Partial<PrintSettings>) => void
 }
 
@@ -21,25 +28,55 @@ export function PrintGeometrySection({
   actualBase,
   heightMm,
   widthMm,
+  units,
+  printers,
+  printerId,
+  onSelectPrinter,
   onChange,
 }: Props) {
+  // Height is stored in inches; only this one model-size field switches units (layer/base stay mm).
+  const inMm = units === 'mm'
+  // Round the displayed value with the same precision as the readout (sizeDigits) so they agree.
+  const factor = 10 ** sizeDigits(units)
   return (
     <Section title="Print Geometry">
+      {printers.length > 0 && (
+        <div className="grid gap-1">
+          <label htmlFor="printer-select" className="text-label">
+            Printer
+          </label>
+          <select
+            id="printer-select"
+            value={printerId ?? ''}
+            onChange={(e) => onSelectPrinter(e.target.value || null)}
+            className="w-full"
+          >
+            <option value="">Manual (no profile)</option>
+            {printers.map((pr) => (
+              <option key={pr.id} value={pr.id}>
+                {pr.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2.5">
         <NumberField
-          id="height-in"
+          id="height"
           label="Height"
-          unit="in"
-          value={p.heightIn}
-          min={1}
-          max={12}
-          step={0.25}
+          unit={unitLabel(units)}
+          value={inMm ? Math.round(heightMm * factor) / factor : p.heightIn}
+          min={inMm ? 25 : 1}
+          max={inMm ? 305 : 12}
+          step={inMm ? 1 : 0.25}
           note={
             <span className="num">
-              {widthMm ? widthMm.toFixed(1) : '–'} × {heightMm.toFixed(1)} mm
+              {widthMm ? formatSize(widthMm, units) : '–'} × {formatSize(heightMm, units)}
             </span>
           }
-          onChange={(v) => v && v > 0 && onChange({ heightIn: Math.min(12, v) })}
+          onChange={(v) =>
+            v && v > 0 && onChange({ heightIn: Math.min(12, toMm(v, units) / MM_PER_IN) })
+          }
         />
         <NumberField
           id="base-mm"

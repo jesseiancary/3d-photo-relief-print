@@ -121,16 +121,17 @@ export class Engine {
     settings: Settings,
     title: string,
     template: SlicerTemplate | null,
+    bedMm: number,
     onProgress?: (stage: string, f: number) => void,
   ) {
     return this.request(
-      { kind: 'export', reqId: this.nextId++, settings, title, template },
+      { kind: 'export', reqId: this.nextId++, settings, title, template, bedMm },
       onProgress,
     )
   }
 
-  wedge(settings: Settings, title: string, template: SlicerTemplate | null) {
-    return this.request({ kind: 'wedge', reqId: this.nextId++, settings, title, template })
+  wedge(settings: Settings, title: string, template: SlicerTemplate | null, bedMm: number) {
+    return this.request({ kind: 'wedge', reqId: this.nextId++, settings, title, template, bedMm })
   }
 }
 

@@ -146,6 +146,7 @@ export function createHandler(post: Post, deps: HandlerDeps = {}) {
             print: s.print,
             template: req.template,
             sizeMm,
+            bedMm: req.bedMm,
           },
           (f) => post({ kind: 'progress', reqId, stage: 'Writing 3MF', frac: 0.4 + 0.6 * f }),
         )
@@ -174,6 +175,7 @@ export function createHandler(post: Post, deps: HandlerDeps = {}) {
           print: s.print,
           template: req.template,
           sizeMm: w.sizeMm,
+          bedMm: req.bedMm,
         })
         post(
           {
