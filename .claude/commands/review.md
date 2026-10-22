@@ -2,13 +2,13 @@
 
 Run a pre-PR checklist before creating a pull request.
 
-This is a browser-only tool (no backend, no auth, no network). The checklist reflects that: correctness of the image → tone → mesh → 3MF pipeline, type safety, and tests.
+This project has two halves: the pure, framework-free engine in `src/core/` (image → tone → mesh → 3MF, runnable in the browser, the worker, and the Node CLI) and the Next.js app around it (accounts, a server-backed library, saved projects, and Vercel Blob storage — `src/server/`, `app/api/`, the Zod contract, the client data layer). The checklist covers both, plus type safety and tests.
 
 ## Checklist
 
 ### Type Safety
 
-- [ ] `npm run build` passes (`tsc -b` runs first — strict mode across all project references)
+- [ ] `npm run typecheck` passes (`tsc --noEmit` across the app/node/test/e2e projects) and `npm run build` passes (`next build`)
 - [ ] No new `any` types
 - [ ] No type assertions (`as`) without a comment explaining why
 
@@ -42,6 +42,16 @@ This is a browser-only tool (no backend, no auth, no network). The checklist ref
 - [ ] Message contract in `protocol.ts` kept in sync between client and handler
 - [ ] Preview path stays latest-wins (one in flight, one queued)
 - [ ] Main-thread fallback still works when a worker can't start
+
+### Server / API / Data / Auth (`src/server/`, `app/api/`)
+
+- [ ] Every `data.ts` query is scoped to the caller's `userId` (no `_id`-only filter) — a miss leaks another user's documents
+- [ ] Every `app/api` route gates on `requireUserId()` (or `auth()` for the blob token route) before reading/mutating
+- [ ] By-id updates/deletes resolve through a `userId`-scoped lookup + `found()` (ownership, not just auth)
+- [ ] New request/response shapes are Zod schemas in [library-types.ts](../../src/lib/library-types.ts) (not hand-rolled); routes validate via `parseBody`, [store.ts](../../src/lib/store.ts) validates responses with the same schemas
+- [ ] British `colour` keys preserved in the template contract (never renamed to `color`)
+- [ ] `server-only` boundary intact — client code imports `@/server` only as `import type`; blobs orphaned by a failed doc write are cleaned up
+- [ ] For non-trivial server changes run the `server-contract-validate` skill or the `server-reviewer` agent
 
 ### Code Quality
 
