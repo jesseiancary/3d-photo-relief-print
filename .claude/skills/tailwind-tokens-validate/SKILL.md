@@ -48,8 +48,11 @@ font-family tokens need no entry — skip them.
 `color-mix` in the built CSS.
 
 ```bash
-npm run build >/dev/null 2>&1 && grep -o 'color-mix([^;]*' dist/assets/*.css | head
+npm run build >/dev/null 2>&1 && grep -o 'color-mix([^;]*' .next/static/chunks/*.css | head
 ```
+
+(`next build` emits CSS to `.next/static/chunks/*.css` — the old Vite `dist/assets/*.css` path no
+longer exists. If a future Next version moves it, find it with `find .next -name '*.css'`.)
 
 → **PASS** if `color-mix(` appears for the composed tokens
 (`--color-primary-wash`, `--color-primary-soft`, `--color-surface-overlay`).

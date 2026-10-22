@@ -26,7 +26,7 @@ Use **Conventional Commits** format:
 
 ### Scope
 
-Optional but recommended. Examples: `core`, `worker`, `ui`, `mesh`, `tones`, `3mf`, `image`, `deps`.
+Optional but recommended. Examples: `core`, `worker`, `ui`, `mesh`, `tones`, `3mf`, `image`, `server`, `api`, `auth`, `deps`.
 
 ### Examples
 
