@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react'
 
+import { AppToolbar } from '@/components/AppToolbar'
 import { Hint } from '@/components/Hint'
 import { Panel } from '@/components/Panel'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { baseLayers, layerTop } from '@/core/tones'
 import { AdjustSection, computeAutoLevels } from '@/features/adjust'
 import { useCropEditor } from '@/features/crop'
@@ -142,10 +142,7 @@ export default function App({ projectId }: { projectId?: string }) {
           </span>
           <h1 className="m-0 font-display text-title">Photo Relief</h1>
         </div>
-        <div className="flex items-center gap-4">
-          <p className="m-0 text-muted max-side:hidden">Photo in, layered filament relief out.</p>
-          <ThemeToggle />
-        </div>
+        <AppToolbar />
       </header>
 
       {imp.pending && (
