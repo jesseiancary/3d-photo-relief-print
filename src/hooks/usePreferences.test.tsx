@@ -29,6 +29,7 @@ beforeEach(() => {
 afterEach(() => {
   localStorage.clear()
   delete document.documentElement.dataset.theme
+  document.cookie = `${THEME_KEY}=; path=/; max-age=0`
 })
 
 describe('usePreferences', () => {
@@ -38,6 +39,8 @@ describe('usePreferences', () => {
     expect(result.current.theme).toBe('dark')
     expect(document.documentElement.dataset.theme).toBe('dark')
     expect(localStorage.getItem(THEME_KEY)).toBe('dark')
+    // Mirrored to the cookie so the server renders <html data-theme> on the next load.
+    expect(document.cookie).toContain(`${THEME_KEY}=dark`)
     expect(h.update).not.toHaveBeenCalled()
   })
 
