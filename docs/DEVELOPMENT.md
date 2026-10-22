@@ -106,6 +106,50 @@ Three layers (full conventions in [.claude/rules/testing.md](../.claude/rules/te
 Coverage (`npm run coverage`, v8) is **report-only** — CI publishes the report as an
 artifact but there's no threshold gating the build.
 
+## Deploying to Vercel
+
+Photo Relief deploys to **Vercel**. The app is a full Next.js server (Auth.js routes,
+the library API, SSR) wrapping the client-only relief tool, so it needs a Node runtime
+— not static hosting — and `next build` is the only build (there is no longer a
+single-file artifact).
+
+Set these in the Vercel project (Settings → Environment Variables); they mirror
+[.env.example](../.env.example):
+
+| Variable                                | Source                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------ |
+| `MONGODB_URI`                           | MongoDB Atlas connection string (include the db name)                    |
+| `AUTH_SECRET`                           | `npx auth secret`                                                        |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | Google Cloud OAuth client                                                |
+| `BLOB_READ_WRITE_TOKEN`                 | injected automatically when you add a Vercel Blob store (Storage → Blob) |
+
+`trustHost: true` is set in [auth.config.ts](../src/server/auth.config.ts), so no
+`AUTH_URL` / `NEXTAUTH_URL` is needed.
+
+**First deploy**
+
+1. Import the repo at [vercel.com](https://vercel.com) → New Project (Next.js is
+   auto-detected; set Node 22 to match [.nvmrc](../.nvmrc)).
+2. Storage → Create → **Blob** (injects `BLOB_READ_WRITE_TOKEN`), then add the other
+   env vars above.
+3. MongoDB Atlas → Network Access → allow Vercel (`0.0.0.0/0` to start; Vercel's
+   serverless IPs are not static).
+4. Deploy, then add the production callback to the Google OAuth client:
+   `https://<domain>/api/auth/callback/google`.
+
+**Automatic deploys** — Vercel's GitHub app deploys `main` to production on every merge
+and gives each PR its own preview URL; no config beyond connecting the repo (Settings →
+Git → Production Branch = `main`). CI ([ci.yml](../.github/workflows/ci.yml)) keeps
+gating the PR independently.
+
+**DNS** stays in AWS Route 53 — add the record Vercel shows under Settings → Domains (a
+`CNAME` to `cname.vercel-dns.com` for a subdomain; an `A` record to Vercel's IP for the
+apex). Vercel provisions TLS once the record resolves.
+
+> The project previously served the static page via AWS Amplify; that path is retired
+> (the old `amplify.yml` published Vite's `dist/`, which Next.js no longer produces).
+> After cutover, disconnect the Amplify app in the AWS console and repoint DNS to Vercel.
+
 ## Known limits
 
 - The Bambu export reuses a slicer template (built-in default is a Bambu Lab P2S
