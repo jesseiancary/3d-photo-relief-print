@@ -8,32 +8,35 @@ the product-level overview, see the [README](../README.md); for the deep story o
 
 - **Node 22** (matches CI).
 - **npm** (ships with Node).
+- The relief tool runs with no setup. The account/library features additionally need
+  env vars — copy [.env.example](../.env.example) to `.env.local` and fill it in (see
+  [Deploying to Vercel](#deploying-to-vercel) for what each one is).
 
 ## Setup & run
 
 ```bash
 npm install
-npm run dev        # local dev server at the URL Vite prints
+npm run dev        # Next.js dev server → http://localhost:3000
 ```
 
-That's the whole loop for day-to-day work — Vite hot-reloads as you edit.
+That's the whole loop for day-to-day work — Next.js hot-reloads as you edit. Without
+`.env.local` the relief tool still works; signing in and the library are what need it.
 
 ## Commands
 
 ```bash
 npm install
-npm run dev             # local dev server
+npm run dev             # Next.js dev server → http://localhost:3000
+npm run build           # Next.js production build → .next/
+npm start               # serve the production build
 npm test                # vitest run (core engine, worker, hooks/components, end-to-end 3MF)
 npm run test:watch      # vitest in watch mode
 npm run coverage        # vitest run with a v8 coverage report → coverage/ (report-only, no gate)
 npm run e2e             # Playwright end-to-end (first run: npx playwright install chromium)
-npm run typecheck       # verify types (tsc -b)
+npm run typecheck       # tsc --noEmit across the app/node/test/e2e tsconfig projects
 npm run lint            # oxlint
 npm run format          # format everything with Prettier
 npm run format:check    # check formatting without writing (CI-friendly)
-npm run build           # static multi-file build → dist/
-npm run build:single    # one self-contained HTML (worker inlined) → dist-single/index.html
-npm run build:artifact  # body-only page for publishing as a claude.ai artifact
 npx tsx scripts/cli.ts in.gray W H out.3mf [heightIn]   # headless pipeline on a raw 8-bit grey file
 ```
 
@@ -160,8 +163,6 @@ apex). Vercel provisions TLS once the record resolves.
   slicer, or it shows a "newer version" dialog.
 - PrusaSlicer color changes are not written yet; use the Plain 3MF export with
   swap-instructions.txt.
-- Inside a claude.ai artifact, the host's download prompt doesn't accept `.3mf`, so
-  the file arrives wrapped in a `.zip`.
-- No saved projects yet. Filament profiles are kept in localStorage, with JSON
-  import and export.
+- Anonymous users keep filament profiles and settings in localStorage (JSON import
+  and export); the server-backed library and saved projects require signing in.
 - HEIC photos need converting to JPEG first.
