@@ -7,13 +7,16 @@ import {
   readStoredPrefs,
   reconcilePrefs,
   THEME_KEY,
-  themeNoFlashScript,
+  themeAttr,
   writeStoredPrefs,
+  writeThemeCookie,
 } from './prefs'
 
 afterEach(() => {
   localStorage.clear()
   delete document.documentElement.dataset.theme
+  // Expire the theme cookie between specs.
+  document.cookie = `${THEME_KEY}=; path=/; max-age=0`
 })
 
 const prefs = (theme: PreferencesDTO['theme'], units: PreferencesDTO['units']): PreferencesDTO => ({
@@ -41,16 +44,21 @@ describe('applyTheme', () => {
   })
 })
 
-describe('themeNoFlashScript', () => {
-  it('reads the mirror under THEME_KEY and only sets the attribute for light/dark', () => {
-    const script = themeNoFlashScript()
-    // Built from THEME_KEY so the inline script can't drift from the stored key.
-    expect(script).toContain(THEME_KEY)
-    expect(script).toContain("t==='light'")
-    expect(script).toContain("t==='dark'")
-    expect(script).toContain('document.documentElement.dataset.theme')
-    // No 'system' branch — matches applyTheme leaving the attribute unset for system/unknown.
-    expect(script).not.toContain('system')
+describe('themeAttr', () => {
+  it('maps light/dark to themselves and system/unknown/absent to undefined', () => {
+    expect(themeAttr('light')).toBe('light')
+    expect(themeAttr('dark')).toBe('dark')
+    expect(themeAttr('system')).toBeUndefined()
+    expect(themeAttr('neon')).toBeUndefined()
+    expect(themeAttr(null)).toBeUndefined()
+    expect(themeAttr(undefined)).toBeUndefined()
+  })
+})
+
+describe('writeThemeCookie', () => {
+  it('writes the raw theme under THEME_KEY so the server can read it', () => {
+    writeThemeCookie('dark')
+    expect(document.cookie).toContain(`${THEME_KEY}=dark`)
   })
 })
 

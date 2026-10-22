@@ -30,6 +30,27 @@ test.describe('Photo Relief app', () => {
     await expect(page.locator('canvas')).toBeVisible()
   })
 
+  test('renders <html data-theme> from the theme cookie with no hydration mismatch', async ({
+    page,
+    context,
+  }) => {
+    // Collect console errors to catch React's hydration-mismatch warning (logged as console.error).
+    const errors: string[] = []
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
+
+    await context.addCookies([
+      { name: 'photo-relief.theme.v1', value: 'dark', url: 'http://localhost:3000' },
+    ])
+    const response = await page.goto('/')
+
+    // The server read the cookie and rendered the attribute into the initial HTML (asserted on the
+    // response body so the client applyTheme effect can't mask it). The client then hydrates against
+    // the same markup, so there is no hydration mismatch.
+    expect(await response!.text()).toMatch(/<html[^>]*data-theme="dark"/)
+    await expect(page.getByRole('heading', { name: 'Photo Relief' })).toBeVisible()
+    expect(errors.filter((e) => /hydrat/i.test(e))).toEqual([])
+  })
+
   test('exports a Bambu-project 3MF that passes the loader rules', async ({ page }) => {
     await page.goto('/')
     // wait for the preview so Export is enabled

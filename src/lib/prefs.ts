@@ -1,8 +1,10 @@
 // Preferences storage + theme application. Split out from the React provider so the pure parts
-// (reconcile, validated read) are unit-testable in Node without importing React/next-auth. Theme and
-// units are stored as RAW strings (not JSON) so the no-flash inline script in app/layout.tsx can read
-// the theme synchronously with a trivial getItem — see that script, which must stay in sync with
-// THEME_KEY and the 'system' → no-attribute rule here.
+// (reconcile, validated read, themeAttr) are unit-testable in Node without importing React/next-auth.
+// Theme and units are mirrored to localStorage as RAW strings (not JSON); the theme is *also* mirrored
+// to a cookie (writeThemeCookie) so the server can read it in app/layout.tsx and render <html
+// data-theme> on first paint — matching the client with no flash and no hydration mismatch. The
+// cookie value and server rendering both go through themeAttr, so the 'system' → no-attribute rule
+// lives in one place.
 
 import {
   DEFAULT_PREFERENCES,
@@ -15,21 +17,28 @@ import {
 export const THEME_KEY = 'photo-relief.theme.v1'
 export const UNITS_KEY = 'photo-relief.units.v1'
 
-/** Reflect the theme pref onto `<html data-theme>`. 'system' removes the attribute so the
- *  prefers-color-scheme media query (wired in index.css) governs. Guarded for SSR. */
-export function applyTheme(theme: ThemePref): void {
-  if (typeof document === 'undefined') return
-  const root = document.documentElement
-  if (theme === 'system') delete root.dataset.theme
-  else root.dataset.theme = theme
+/** Map a stored theme (a DTO pref, or a raw cookie string that could be anything) to the `<html
+ *  data-theme>` value: explicit light|dark set the attribute; 'system'/unknown/absent leave it unset so
+ *  the prefers-color-scheme media query (wired in index.css) governs. The single source of the rule,
+ *  used by both the server render (app/layout.tsx) and applyTheme below. */
+export function themeAttr(theme: string | null | undefined): 'light' | 'dark' | undefined {
+  return theme === 'light' || theme === 'dark' ? theme : undefined
 }
 
-/** The pre-hydration inline script (injected in app/layout.tsx) that sets `<html data-theme>` from the
- *  theme mirror before first paint, so signed-in dark users don't flash white. Built from THEME_KEY and
- *  mirrors applyTheme's rule (light|dark → set, 'system'/unknown → leave unset) so the two can't drift.
- *  Returns a self-contained IIFE string (no runtime references) safe to inline. */
-export function themeNoFlashScript(): string {
-  return `(function(){try{var t=localStorage.getItem('${THEME_KEY}');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t;}catch(e){}})()`
+/** Reflect the theme pref onto `<html data-theme>`. Guarded for SSR. */
+export function applyTheme(theme: ThemePref): void {
+  if (typeof document === 'undefined') return
+  const attr = themeAttr(theme)
+  if (attr) document.documentElement.dataset.theme = attr
+  else delete document.documentElement.dataset.theme
+}
+
+/** Mirror the theme to a cookie so the server can render `<html data-theme>` on first paint (no flash,
+ *  no hydration mismatch). Browser-only; guarded for SSR. 1-year, root-path, Lax; not HttpOnly — it's a
+ *  display pref the client sets. The raw value is stored as-is and normalised server-side via themeAttr. */
+export function writeThemeCookie(theme: ThemePref): void {
+  if (typeof document === 'undefined') return
+  document.cookie = `${THEME_KEY}=${theme}; path=/; max-age=31536000; samesite=lax`
 }
 
 /** The prefs to use on load: the account doc wins for a signed-in user (server non-null), otherwise

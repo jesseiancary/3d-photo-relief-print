@@ -4,7 +4,13 @@ import { useSession } from 'next-auth/react'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 
 import type { PreferencesDTO, ThemePref, UnitsPref } from '@/lib/library-types'
-import { applyTheme, readStoredPrefs, reconcilePrefs, writeStoredPrefs } from '@/lib/prefs'
+import {
+  applyTheme,
+  readStoredPrefs,
+  reconcilePrefs,
+  writeStoredPrefs,
+  writeThemeCookie,
+} from '@/lib/prefs'
 import { libraryApi } from '@/lib/store'
 
 interface PreferencesCtx {
@@ -52,9 +58,12 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     }
   }, [status])
 
-  // Keep <html data-theme> in sync (covers the first client render + every change; matches the script).
+  // Keep <html data-theme> in sync (covers the first client render + every change) and refresh the
+  // cookie the server reads on the next load, so SSR renders the right theme with no flash. Writing on
+  // mount also back-fills the cookie for users who only have the older localStorage mirror.
   useEffect(() => {
     applyTheme(prefs.theme)
+    writeThemeCookie(prefs.theme)
   }, [prefs.theme])
 
   const update = (patch: Partial<PreferencesDTO>) => {

@@ -1,9 +1,10 @@
 import '@/index.css'
 
 import type { Metadata, Viewport } from 'next'
+import { cookies } from 'next/headers'
 import type { ReactNode } from 'react'
 
-import { themeNoFlashScript } from '@/lib/prefs'
+import { THEME_KEY, themeAttr } from '@/lib/prefs'
 
 import { Providers } from './providers'
 
@@ -17,13 +18,14 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  // Render <html data-theme> from the theme cookie so the server HTML matches the client (no flash,
+  // no hydration mismatch). The cookie is written client-side by the preferences provider; reading it
+  // here opts the app into dynamic rendering, which is already the case (auth + client-only home).
+  const theme = themeAttr((await cookies()).get(THEME_KEY)?.value)
   return (
-    <html lang="en">
+    <html lang="en" data-theme={theme}>
       <head>
-        {/* Set <html data-theme> before first paint from the theme mirror so signed-in dark users
-            don't flash white. The script is built from THEME_KEY in src/lib/prefs.ts. */}
-        <script dangerouslySetInnerHTML={{ __html: themeNoFlashScript() }} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link
