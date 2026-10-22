@@ -113,6 +113,35 @@ describe('end to end', () => {
     for (let i = 1; i < fracs.length; i++) expect(fracs[i]).toBeGreaterThanOrEqual(fracs[i - 1])
   })
 
+  it('centers the model on the configured bed (bedMm/2)', () => {
+    const s = defaultSettings()
+    s.print.heightIn = 1
+    const g = gridFor(40, 30, s.print.heightIn * 25.4, 0.5)
+    const data = new Uint8Array(g.cols * g.rows).fill(128)
+    const p = process({ w: g.cols, h: g.rows, data }, s, g.mmPerPx)
+    const { mesh } = buildMesh(p.tones, g.cols, g.rows, p.plan, g.mmPerPx)
+    const sizeMm: [number, number] = [100, 80] // controls the transform independent of mesh bounds
+    const wrapper = (bedMm?: number) =>
+      strFromU8(
+        unzipSync(
+          write3mf({
+            mesh,
+            title: 'c',
+            plan: p.plan,
+            filaments: s.filaments,
+            print: s.print,
+            template: DEFAULT_TEMPLATE,
+            sizeMm,
+            bedMm,
+          }),
+        )['3D/3dmodel.model'],
+      )
+    // bedMm 180 → center 90 → tx = 90 - 50, ty = 90 - 40
+    expect(wrapper(180)).toContain('1 0 0 0 1 0 0 0 1 40 50 0')
+    // omitted bedMm defaults to a 256 mm bed → center 128 (the prior fixed behavior)
+    expect(wrapper()).toContain('1 0 0 0 1 0 0 0 1 78 88 0')
+  })
+
   it('step wedge is watertight and covers every band layer', () => {
     const s = defaultSettings()
     const w = stepWedge(s)

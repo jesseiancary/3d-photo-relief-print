@@ -56,7 +56,14 @@ describe('createHandler', () => {
   it('emits progress then an export with 3MF bytes', () => {
     const { posts, handle } = harness()
     handle({ kind: 'load', bitmap: fakeBitmap })
-    handle({ kind: 'export', reqId: 2, settings: smallSettings(), title: 'x', template: null })
+    handle({
+      kind: 'export',
+      reqId: 2,
+      settings: smallSettings(),
+      title: 'x',
+      template: null,
+      bedMm: 256,
+    })
     expect(posts.some((p) => p.kind === 'progress')).toBe(true)
     const done = posts.find((p) => p.kind === 'exported')
     if (done?.kind !== 'exported') throw new Error('no export')
@@ -66,14 +73,28 @@ describe('createHandler', () => {
 
   it('reports an error when exporting with no image loaded', () => {
     const { posts, handle } = harness()
-    handle({ kind: 'export', reqId: 3, settings: smallSettings(), title: 'x', template: null })
+    handle({
+      kind: 'export',
+      reqId: 3,
+      settings: smallSettings(),
+      title: 'x',
+      template: null,
+      bedMm: 256,
+    })
     const err = posts.find((p) => p.kind === 'error')
     expect(err).toMatchObject({ kind: 'error', reqId: 3 })
   })
 
   it('builds a step wedge export', () => {
     const { posts, handle } = harness()
-    handle({ kind: 'wedge', reqId: 4, settings: smallSettings(), title: 'wedge', template: null })
+    handle({
+      kind: 'wedge',
+      reqId: 4,
+      settings: smallSettings(),
+      title: 'wedge',
+      template: null,
+      bedMm: 256,
+    })
     const done = posts.find((p) => p.kind === 'exported')
     if (done?.kind !== 'exported') throw new Error('no wedge export')
     expect(done.bytes.byteLength).toBeGreaterThan(0)

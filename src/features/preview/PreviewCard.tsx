@@ -7,6 +7,8 @@ import { Segmented } from '@/components/Segmented'
 import type { TonePlan } from '@/core/tones'
 import type { CropSettings } from '@/core/types'
 import { CropControls, CropEditor, type CropEditorState } from '@/features/crop'
+import type { UnitsPref } from '@/lib/library-types'
+import { formatSize, MM_PER_IN } from '@/lib/units'
 
 export type View = 'print' | 'adjusted' | 'original'
 
@@ -17,6 +19,7 @@ interface Props {
   plan: TonePlan | undefined
   widthMm: number
   heightIn: number
+  units: UnitsPref
   imageUrl: string | null
   isSample: boolean
   dragging: boolean
@@ -37,6 +40,7 @@ export function PreviewCard({
   plan,
   widthMm,
   heightIn,
+  units,
   imageUrl,
   isSample,
   dragging,
@@ -78,7 +82,7 @@ export function PreviewCard({
         )}
         {hasPreview && (
           <span className="num text-caption text-muted">
-            {(widthMm / 25.4).toFixed(2)} × {heightIn.toFixed(2)} in ·{' '}
+            {formatSize(widthMm, units)} × {formatSize(heightIn * MM_PER_IN, units)} ·{' '}
             {plan ? plan.maxZ.toFixed(2) : '–'} mm tall
           </span>
         )}

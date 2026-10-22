@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import type { ReactNode } from 'react'
 
 import { Button } from '@/components/Button'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { auth, signOut } from '@/server/auth'
 
 export const dynamic = 'force-dynamic'
@@ -40,6 +41,7 @@ export default async function LibraryLayout({ children }: { children: ReactNode 
           </Link>
         </nav>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <span className="text-caption text-muted">{session.user.email}</span>
           <form
             action={async () => {

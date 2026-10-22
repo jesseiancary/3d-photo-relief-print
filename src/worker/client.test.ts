@@ -68,7 +68,7 @@ describe('Engine request/response correlation', () => {
     const w = new FakeWorker()
     const engine = new Engine({ workerFactory: asWorker(w) })
     const onProgress = vi.fn()
-    const p = engine.export(defaultSettings(), 'title', null, onProgress)
+    const p = engine.export(defaultSettings(), 'title', null, 256, onProgress)
     const req = w.posted.find((r) => r.kind === 'export') as Extract<Request, { kind: 'export' }>
     w.reply({ kind: 'progress', reqId: req.reqId, stage: 'Writing', frac: 0.5 })
     w.reply({
@@ -87,7 +87,7 @@ describe('Engine request/response correlation', () => {
   it('rejects export on an error response', async () => {
     const w = new FakeWorker()
     const engine = new Engine({ workerFactory: asWorker(w) })
-    const p = engine.export(defaultSettings(), 'title', null)
+    const p = engine.export(defaultSettings(), 'title', null, 256)
     const req = w.posted.find((r) => r.kind === 'export') as Extract<Request, { kind: 'export' }>
     w.reply({ kind: 'error', reqId: req.reqId, message: 'nope' })
     await expect(p).rejects.toThrow('nope')

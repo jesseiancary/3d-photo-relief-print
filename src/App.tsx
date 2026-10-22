@@ -2,11 +2,13 @@ import { useRef, useState } from 'react'
 
 import { Hint } from '@/components/Hint'
 import { Panel } from '@/components/Panel'
+import { ThemeToggle } from '@/components/ThemeToggle'
 import { baseLayers, layerTop } from '@/core/tones'
 import { AdjustSection, computeAutoLevels } from '@/features/adjust'
 import { useCropEditor } from '@/features/crop'
 import { ExportCard } from '@/features/export'
 import { FilamentsSection } from '@/features/filaments'
+import { ImportPrompt } from '@/features/import'
 import { PhotoSection } from '@/features/photo'
 import { StackDiagram, SwapTable } from '@/features/plan'
 import { PreviewCard, type View } from '@/features/preview'
@@ -16,6 +18,9 @@ import { SlicerTemplateSection } from '@/features/template'
 import { TonesSection } from '@/features/tones'
 import {
   useCanvasPreview,
+  useLibraryImport,
+  usePreferences,
+  usePrinter,
   useProject,
   useProjectHydration,
   useReliefEngine,
@@ -24,13 +29,15 @@ import {
   useTemplate,
 } from '@/hooks'
 import { slug } from '@/lib/slug'
-
-const BED_MM = 250
+import { formatSize, MM_PER_IN } from '@/lib/units'
 
 export default function App({ projectId }: { projectId?: string }) {
   const { status, say, clear } = useStatus()
+  const { units } = usePreferences()
   const { settings, defs, set, setFilaments, replaceSettings } = useSettings()
+  const printer = usePrinter((patch) => set('print', patch), say)
   const project = useProject()
+  const imp = useLibraryImport()
   const {
     template,
     templateId,
@@ -55,6 +62,7 @@ export default function App({ projectId }: { projectId?: string }) {
   const engine = useReliefEngine({
     settings,
     template,
+    bedMm: printer.bedMm,
     say,
     clear,
     onImageLoad,
@@ -114,17 +122,18 @@ export default function App({ projectId }: { projectId?: string }) {
   const actualBase = layerTop(nBase, p)
   const plan = preview?.plan
   const widthMm = preview?.widthMm ?? 0
-  const heightMm = p.heightIn * 25.4
-  const tooBig = widthMm > BED_MM || heightMm > BED_MM
+  const heightMm = p.heightIn * MM_PER_IN
+  const bedMm = printer.bedMm
+  const tooBig = widthMm > bedMm || heightMm > bedMm
   const warnings = [...(plan?.warnings ?? [])]
   if (tooBig)
     warnings.push(
-      `At ${(widthMm / 25.4).toFixed(2)} × ${p.heightIn} in (${widthMm.toFixed(0)} × ${heightMm.toFixed(0)} mm) this is larger than a 256 mm bed.`,
+      `At ${formatSize(widthMm, units)} × ${formatSize(heightMm, units)} this is larger than the ${bedMm} mm bed.`,
     )
 
   return (
     <div className="mx-auto max-w-360 px-4 pb-12">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 pb-4 pt-4.5">
+      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pb-4 pt-4.5">
         <div className="flex items-center gap-2.5">
           <span className="grid w-5.5 gap-0.5" aria-hidden="true">
             <i className="block h-1.25 w-3/5 rounded-[1px] bg-[#f4f4f2] shadow-ring" />
@@ -133,8 +142,24 @@ export default function App({ projectId }: { projectId?: string }) {
           </span>
           <h1 className="m-0 font-display text-title">Photo Relief</h1>
         </div>
-        <p className="m-0 text-muted">Photo in, layered filament relief out.</p>
+        <div className="flex items-center gap-4">
+          <p className="m-0 text-muted max-side:hidden">Photo in, layered filament relief out.</p>
+          <ThemeToggle />
+        </div>
       </header>
+
+      {imp.pending && (
+        <div className="pb-4">
+          <ImportPrompt
+            profiles={imp.counts.profiles}
+            template={imp.counts.template}
+            busy={imp.busy}
+            error={imp.error}
+            onImport={imp.run}
+            onDismiss={imp.dismiss}
+          />
+        </div>
+      )}
 
       <main className="grid grid-cols-1 items-start gap-5 side:grid-cols-[minmax(300px,370px)_minmax(0,1fr)]">
         <aside className="grid gap-3" aria-label="Settings">
@@ -153,6 +178,10 @@ export default function App({ projectId }: { projectId?: string }) {
             actualBase={actualBase}
             heightMm={heightMm}
             widthMm={widthMm}
+            units={units}
+            printers={printer.printers}
+            printerId={printer.printerId}
+            onSelectPrinter={printer.selectPrinter}
             onChange={(patch) => set('print', patch)}
           />
 
@@ -217,6 +246,7 @@ export default function App({ projectId }: { projectId?: string }) {
             plan={plan}
             widthMm={widthMm}
             heightIn={p.heightIn}
+            units={units}
             imageUrl={engine.imageUrl}
             isSample={engine.isSample}
             dragging={dragging}

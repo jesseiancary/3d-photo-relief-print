@@ -8,13 +8,11 @@
  */
 import { strToU8, Zip, ZipDeflate } from 'fflate'
 
+import { DEFAULT_BED_MM } from './defaults'
 import type { Mesh } from './mesh'
 import { projectConfigFor, type SlicerTemplate } from './template'
 import type { TonePlan } from './tones'
 import type { Filament, PrintSettings } from './types'
-
-/** plate is square; drop the model in the middle of a 256 mm bed (the slicer lets you move it after) */
-const BED_CENTER = 128
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
@@ -206,6 +204,8 @@ export interface ThreeMfInput {
   filaments: Filament[]
   print: PrintSettings
   sizeMm: [number, number]
+  /** square bed size (mm) the model is centered on; defaults to DEFAULT_BED_MM when omitted */
+  bedMm?: number
   /** when set, write a slicer project reusing this template; otherwise write plain geometry */
   template?: SlicerTemplate | null
 }
@@ -264,8 +264,10 @@ export function write3mf(inp: ThreeMfInput, onProgress?: (f: number) => void): U
       return
     }
 
-    const tx = BED_CENTER - inp.sizeMm[0] / 2,
-      ty = BED_CENTER - inp.sizeMm[1] / 2
+    // Center the model on a square bed (the slicer lets you move it after).
+    const bedCenter = (inp.bedMm ?? DEFAULT_BED_MM) / 2
+    const tx = bedCenter - inp.sizeMm[0] / 2,
+      ty = bedCenter - inp.sizeMm[1] / 2
     const transform = `1 0 0 0 1 0 0 0 1 ${num(tx)} ${num(ty)} 0`
     addSmall('3D/3dmodel.model', wrapperModel(inp.title, inp.template.application, transform))
     addSmall('3D/_rels/3dmodel.model.rels', MODEL_RELS)

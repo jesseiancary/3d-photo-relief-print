@@ -1,4 +1,7 @@
 export { useCanvasPreview } from './useCanvasPreview'
+export { useLibraryImport } from './useLibraryImport'
+export { PreferencesProvider, usePreferences } from './usePreferences'
+export { usePrinter } from './usePrinter'
 export { useProject } from './useProject'
 export { useProjectHydration } from './useProjectHydration'
 export { useReliefEngine, type Busy, type LastExport } from './useReliefEngine'

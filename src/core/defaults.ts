@@ -40,3 +40,8 @@ export const MIN_FILAMENTS = 2
 export const MAX_FILAMENTS = 4
 export const MIN_TONES = 2
 export const MAX_TONES = 10
+
+// Fallback bed size (mm) when no printer profile is selected. A single value = a square bed; it drives
+// the oversize warning and the 3MF plate centering (bed center = DEFAULT_BED_MM / 2). A selected
+// PrinterProfile.bedMm overrides it. 256 matches the X1/P-series plate the default template targets.
+export const DEFAULT_BED_MM = 256
