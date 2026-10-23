@@ -11,7 +11,7 @@ export default async function TemplatesPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <SectionHeader
-        title="Slicer templates"
+        title="Slicer Templates"
         subtitle="Saved Bambu / Orca projects whose settings are reused for every 3MF export."
       />
       <TemplatesManager initial={items} />

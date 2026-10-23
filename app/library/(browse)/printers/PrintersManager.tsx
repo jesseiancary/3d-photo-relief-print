@@ -131,7 +131,7 @@ export function PrintersManager({ initial }: { initial: PrinterProfileDTO[] }) {
       {!adding && (
         <div>
           <Button variant="primary" onClick={() => setAdding(true)} disabled={busy}>
-            New printer
+            New Printer
           </Button>
         </div>
       )}

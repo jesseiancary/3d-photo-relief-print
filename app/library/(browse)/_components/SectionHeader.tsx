@@ -7,7 +7,7 @@ export function SectionHeader({ title, subtitle }: { title: string; subtitle: st
       <Link href="/library" className="text-caption text-muted hover:text-foreground">
         ← Library
       </Link>
-      <h2 className="text-title">{title}</h2>
+      <h1 className="text-title">{title}</h1>
       <p className="text-caption text-muted">{subtitle}</p>
     </div>
   )

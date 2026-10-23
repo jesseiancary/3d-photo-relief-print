@@ -11,7 +11,7 @@ export default async function PrintersPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <SectionHeader
-        title="Printer profiles"
+        title="Printer Profiles"
         subtitle="Bed size and layer geometry per printer — the basis for fitting a relief to the bed."
       />
       <PrintersManager initial={items} />

@@ -183,7 +183,7 @@ export function FilamentProfilesManager({ initial }: { initial: FilamentProfileD
       {!adding && (
         <div>
           <Button variant="primary" onClick={() => setAdding(true)} disabled={busy}>
-            New profile
+            New Profile
           </Button>
         </div>
       )}

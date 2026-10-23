@@ -56,7 +56,7 @@ describe('AppToolbar', () => {
     const menuLinks: [string, string][] = [
       ['Library', '/library'],
       ['Projects', '/library/projects'],
-      ['Template', '/library/templates'],
+      ['Templates', '/library/templates'],
       ['Filaments', '/library/filaments'],
       ['Printers', '/library/printers'],
       ['Settings', '/library/settings'],

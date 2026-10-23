@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { AppToolbar } from '@/components/AppToolbar'
+import { AppHeader } from '@/components/AppHeader'
 import { Hint } from '@/components/Hint'
 import { Panel } from '@/components/Panel'
 import { baseLayers, layerTop } from '@/core/tones'
@@ -132,174 +132,170 @@ export default function App({ projectId }: { projectId?: string }) {
     )
 
   return (
-    <div className="mx-auto max-w-360 px-4 pb-12">
-      <header className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pb-4 pt-4.5">
-        <div className="flex items-center gap-2.5">
-          <span className="grid w-5.5 gap-0.5" aria-hidden="true">
-            <i className="block h-1.25 w-3/5 rounded-[1px] bg-[#f4f4f2] shadow-ring" />
-            <i className="block h-1.25 w-4/5 rounded-[1px] bg-[#a8abb0]" />
-            <i className="block h-1.25 w-full rounded-[1px] bg-[#161616]" />
-          </span>
-          <h1 className="m-0 font-display text-title">Photo Relief</h1>
-        </div>
-        <AppToolbar />
-      </header>
+    <>
+      <AppHeader />
+      <div className="mx-auto max-w-360 px-4 pb-12 pt-4">
+        <h1 className="sr-only">Photo Relief</h1>
+        {imp.pending && (
+          <div className="pb-4">
+            <ImportPrompt
+              profiles={imp.counts.profiles}
+              template={imp.counts.template}
+              busy={imp.busy}
+              error={imp.error}
+              onImport={imp.run}
+              onDismiss={imp.dismiss}
+            />
+          </div>
+        )}
 
-      {imp.pending && (
-        <div className="pb-4">
-          <ImportPrompt
-            profiles={imp.counts.profiles}
-            template={imp.counts.template}
-            busy={imp.busy}
-            error={imp.error}
-            onImport={imp.run}
-            onDismiss={imp.dismiss}
-          />
-        </div>
-      )}
+        <main className="grid grid-cols-1 items-start gap-5 side:grid-cols-[minmax(300px,370px)_minmax(0,1fr)]">
+          <aside className="grid gap-3" aria-label="Settings">
+            <PhotoSection
+              isSample={engine.isSample}
+              imageName={engine.imageName}
+              dragging={dragging}
+              setDragging={setDragging}
+              onFiles={engine.onFiles}
+            />
 
-      <main className="grid grid-cols-1 items-start gap-5 side:grid-cols-[minmax(300px,370px)_minmax(0,1fr)]">
-        <aside className="grid gap-3" aria-label="Settings">
-          <PhotoSection
-            isSample={engine.isSample}
-            imageName={engine.imageName}
-            dragging={dragging}
-            setDragging={setDragging}
-            onFiles={engine.onFiles}
-          />
+            <PrintGeometrySection
+              print={p}
+              defaults={defs.print}
+              nBase={nBase}
+              actualBase={actualBase}
+              heightMm={heightMm}
+              widthMm={widthMm}
+              units={units}
+              printers={printer.printers}
+              printerId={printer.printerId}
+              onSelectPrinter={printer.selectPrinter}
+              onChange={(patch) => set('print', patch)}
+            />
 
-          <PrintGeometrySection
-            print={p}
-            defaults={defs.print}
-            nBase={nBase}
-            actualBase={actualBase}
-            heightMm={heightMm}
-            widthMm={widthMm}
-            units={units}
-            printers={printer.printers}
-            printerId={printer.printerId}
-            onSelectPrinter={printer.selectPrinter}
-            onChange={(patch) => set('print', patch)}
-          />
+            <AdjustSection
+              adjust={settings.adjust}
+              defaults={defs.adjust}
+              canAutoLevel={!!preview}
+              onChange={(patch) => set('adjust', patch)}
+              onAutoLevels={autoLevels}
+            />
 
-          <AdjustSection
-            adjust={settings.adjust}
-            defaults={defs.adjust}
-            canAutoLevel={!!preview}
-            onChange={(patch) => set('adjust', patch)}
-            onAutoLevels={autoLevels}
-          />
+            <TonesSection
+              tones={settings.tones}
+              defaults={defs.tones}
+              filamentCount={settings.filaments.length}
+              onChange={(patch) => set('tones', patch)}
+            />
 
-          <TonesSection
-            tones={settings.tones}
-            defaults={defs.tones}
-            filamentCount={settings.filaments.length}
-            onChange={(patch) => set('tones', patch)}
-          />
+            <FilamentsSection
+              filaments={settings.filaments}
+              bands={plan?.bands ?? null}
+              print={p}
+              onChange={setFilaments}
+              onStatus={(t) => say(t)}
+            />
 
-          <FilamentsSection
-            filaments={settings.filaments}
-            bands={plan?.bands ?? null}
-            print={p}
-            onChange={setFilaments}
-            onStatus={(t) => say(t)}
-          />
+            <SlicerTemplateSection
+              summary={tpl}
+              isCustom={isCustom}
+              filamentCount={settings.filaments.length}
+              onImport={importTemplate}
+              onReset={resetTemplate}
+              templates={templates}
+              templateId={templateId}
+              onSelect={selectTemplate}
+            />
 
-          <SlicerTemplateSection
-            summary={tpl}
-            isCustom={isCustom}
-            filamentCount={settings.filaments.length}
-            onImport={importTemplate}
-            onReset={resetTemplate}
-            templates={templates}
-            templateId={templateId}
-            onSelect={selectTemplate}
-          />
+            <ProjectSection
+              isAuthed={project.isAuthed}
+              projectId={project.projectId}
+              name={project.name}
+              onName={project.setName}
+              busy={project.busy}
+              error={project.error}
+              canSave={!!engine.preview}
+              onSave={onSaveProject}
+              exports={project.exports}
+              lastExport={engine.lastExport}
+              onSaveExport={onSaveExport}
+              onRemoveExport={project.removeExport}
+            />
+          </aside>
 
-          <ProjectSection
-            isAuthed={project.isAuthed}
-            projectId={project.projectId}
-            name={project.name}
-            onName={project.setName}
-            busy={project.busy}
-            error={project.error}
-            canSave={!!engine.preview}
-            onSave={onSaveProject}
-            exports={project.exports}
-            lastExport={engine.lastExport}
-            onSaveExport={onSaveExport}
-            onRemoveExport={project.removeExport}
-          />
-        </aside>
+          <section
+            className="grid min-w-0 gap-3.5 max-side:-order-1 side:sticky side:top-[calc(env(safe-area-inset-top,0px)+64px)]"
+            aria-label="Preview and Export"
+          >
+            <PreviewCard
+              view={view}
+              setView={setView}
+              hasPreview={!!preview}
+              plan={plan}
+              widthMm={widthMm}
+              heightIn={p.heightIn}
+              units={units}
+              imageUrl={engine.imageUrl}
+              isSample={engine.isSample}
+              dragging={dragging}
+              setDragging={setDragging}
+              onFiles={engine.onFiles}
+              canvasRef={canvasRef}
+              cropping={cropping}
+              setCropping={setCropping}
+              crop={settings.crop}
+              onCrop={(rect) => set('crop', rect)}
+              cropCtl={cropCtl}
+            />
 
-        <section
-          className="grid min-w-0 gap-3.5 max-side:-order-1 side:sticky side:top-[calc(env(safe-area-inset-top,0px)+12px)]"
-          aria-label="Preview and Export"
-        >
-          <PreviewCard
-            view={view}
-            setView={setView}
-            hasPreview={!!preview}
-            plan={plan}
-            widthMm={widthMm}
-            heightIn={p.heightIn}
-            units={units}
-            imageUrl={engine.imageUrl}
-            isSample={engine.isSample}
-            dragging={dragging}
-            setDragging={setDragging}
-            onFiles={engine.onFiles}
-            canvasRef={canvasRef}
-            cropping={cropping}
-            setCropping={setCropping}
-            crop={settings.crop}
-            onCrop={(rect) => set('crop', rect)}
-            cropCtl={cropCtl}
-          />
+            {warnings.length > 0 && (
+              <ul className="m-0 grid list-none gap-1.5 p-0" aria-live="polite">
+                {warnings.map((w) => (
+                  <li
+                    key={w}
+                    className="rounded-control bg-warn-bg px-3 py-2 text-body text-warn-ink"
+                  >
+                    {w}
+                  </li>
+                ))}
+              </ul>
+            )}
 
-          {warnings.length > 0 && (
-            <ul className="m-0 grid list-none gap-1.5 p-0" aria-live="polite">
-              {warnings.map((w) => (
-                <li
-                  key={w}
-                  className="rounded-control bg-warn-bg px-3 py-2 text-body text-warn-ink"
-                >
-                  {w}
-                </li>
-              ))}
-            </ul>
-          )}
+            {plan && preview && (
+              <div className="grid grid-cols-1 gap-3.5 wide:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                <Panel title="Tones">
+                  <StackDiagram
+                    plan={plan}
+                    filaments={settings.filaments}
+                    counts={preview.counts}
+                  />
+                </Panel>
+                <Panel title="Filament Swaps">
+                  <SwapTable plan={plan} filaments={settings.filaments} />
+                  <Hint className="num">
+                    Slicer: {p.layerMm} mm layers · {p.firstLayerMm} mm first layer · 100% infill ·
+                    1 wall
+                  </Hint>
+                </Panel>
+              </div>
+            )}
 
-          {plan && preview && (
-            <div className="grid grid-cols-1 gap-3.5 wide:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-              <Panel title="Tones">
-                <StackDiagram plan={plan} filaments={settings.filaments} counts={preview.counts} />
-              </Panel>
-              <Panel title="Filament Swaps">
-                <SwapTable plan={plan} filaments={settings.filaments} />
-                <Hint className="num">
-                  Slicer: {p.layerMm} mm layers · {p.firstLayerMm} mm first layer · 100% infill · 1
-                  wall
-                </Hint>
-              </Panel>
-            </div>
-          )}
-
-          <ExportCard
-            title={engine.title}
-            setTitle={engine.setTitle}
-            namePlaceholder={slug(engine.imageName)}
-            busy={engine.busy}
-            status={status}
-            canExport={!!preview}
-            printerName={tpl.printer}
-            usingWorker={engine.usingWorker}
-            onExport={() => engine.doExport()}
-            onPlainExport={() => engine.doExport(true)}
-            onWedge={engine.doWedge}
-          />
-        </section>
-      </main>
-    </div>
+            <ExportCard
+              title={engine.title}
+              setTitle={engine.setTitle}
+              namePlaceholder={slug(engine.imageName)}
+              busy={engine.busy}
+              status={status}
+              canExport={!!preview}
+              printerName={tpl.printer}
+              usingWorker={engine.usingWorker}
+              onExport={() => engine.doExport()}
+              onPlainExport={() => engine.doExport(true)}
+              onWedge={engine.doWedge}
+            />
+          </section>
+        </main>
+      </div>
+    </>
   )
 }
