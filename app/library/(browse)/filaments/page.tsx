@@ -11,7 +11,7 @@ export default async function FilamentsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-4">
       <SectionHeader
-        title="Filament profiles"
+        title="Filament Profiles"
         subtitle="Saved filament stacks. Loading one into the tool mints fresh ids for its filaments."
       />
       <FilamentProfilesManager initial={items} />

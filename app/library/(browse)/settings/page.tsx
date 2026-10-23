@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 export default function SettingsPage() {
   return (
     <div className="flex max-w-2xl flex-col gap-4">
-      <SectionHeader title="Preferences" subtitle="Theme and measurement units for your account." />
+      <SectionHeader title="Settings" subtitle="Theme and measurement units for your account." />
       <PreferencesForm />
     </div>
   )

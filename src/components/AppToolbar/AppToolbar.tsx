@@ -9,7 +9,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 const links = [
   { href: '/library', label: 'Library' },
   { href: '/library/projects', label: 'Projects' },
-  { href: '/library/templates', label: 'Template' },
+  { href: '/library/templates', label: 'Templates' },
   { href: '/library/filaments', label: 'Filaments' },
   { href: '/library/printers', label: 'Printers' },
 ]

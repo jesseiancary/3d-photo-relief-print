@@ -32,25 +32,25 @@ export default async function LibraryPage() {
     },
     {
       href: '/library/templates',
-      title: 'Slicer templates',
+      title: 'Slicer Templates',
       desc: 'Saved Bambu / Orca projects reused for 3MF export.',
       count: `${templates.length} saved`,
     },
     {
       href: '/library/filaments',
-      title: 'Filament profiles',
+      title: 'Filament Profiles',
       desc: 'Saved filament stacks you can load into the tool.',
       count: `${filaments.length} saved`,
     },
     {
       href: '/library/printers',
-      title: 'Printer profiles',
+      title: 'Printer Profiles',
       desc: 'Bed size and layer geometry per printer.',
       count: `${printers.length} saved`,
     },
     {
       href: '/library/settings',
-      title: 'Preferences',
+      title: 'Settings',
       desc: 'Theme and measurement units.',
       count: '',
     },
@@ -59,7 +59,7 @@ export default async function LibraryPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <h2 className="text-heading uppercase text-muted">Your library</h2>
+        <h1 className="text-title">Your Library</h1>
         <p className="text-caption text-muted">
           Your projects and reusable building blocks, saved to your account.
         </p>
@@ -69,9 +69,9 @@ export default async function LibraryPage() {
           <Link key={s.href} href={s.href} className="group">
             <Card className="flex h-full flex-col gap-1 p-4 transition-colors hover:border-line-strong">
               <div className="flex items-baseline justify-between gap-2">
-                <h3 className="text-label font-semibold group-hover:text-primary-accent">
+                <h2 className="text-label font-semibold group-hover:text-primary-accent">
                   {s.title}
-                </h3>
+                </h2>
                 {s.count && <span className="text-caption text-muted">{s.count}</span>}
               </div>
               <p className="text-caption text-muted">{s.desc}</p>

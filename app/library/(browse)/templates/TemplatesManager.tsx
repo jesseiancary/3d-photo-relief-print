@@ -84,7 +84,7 @@ export function TemplatesManager({ initial }: { initial: TemplateDTO[] }) {
           onChange={(e) => onFile(e.target.files)}
         />
         <Button variant="primary" onClick={() => fileRef.current?.click()} disabled={busy}>
-          Import template (.3mf)
+          Import Template (.3mf)
         </Button>
         <Hint>Save a project from Bambu Studio / OrcaSlicer, then import it here.</Hint>
       </div>

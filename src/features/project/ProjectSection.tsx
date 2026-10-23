@@ -67,7 +67,7 @@ export function ProjectSection({
 
       <div className="flex items-center gap-2">
         <Button variant="primary" onClick={onSave} disabled={busy || !canSave || !name.trim()}>
-          {projectId ? 'Update project' : 'Save project'}
+          {projectId ? 'Update Project' : 'Save Project'}
         </Button>
         {projectId && <span className="text-caption text-muted">Saved to your library</span>}
       </div>
@@ -82,13 +82,13 @@ export function ProjectSection({
             onClick={onSaveExport}
             disabled={busy || !projectId || !lastExport}
           >
-            Save last export
+            Save Last Export
           </Button>
         </div>
         {!projectId ? (
           <Hint>Save the project first to keep a history of its 3MF exports.</Hint>
         ) : exports.length === 0 ? (
-          <Hint>No saved exports yet. Export a 3MF, then “Save last export”.</Hint>
+          <Hint>No saved exports yet. Export a 3MF, then “Save Last Export”.</Hint>
         ) : (
           <ul className="flex flex-col gap-1.5">
             {exports.map((e) => (

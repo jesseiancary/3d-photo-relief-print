@@ -23,7 +23,7 @@ export function ProjectsGallery({ initial }: { initial: ProjectDTO[] }) {
   if (items.length === 0)
     return (
       <p className="text-caption text-muted">
-        No saved projects yet. Open the tool, load a photo, and “Save project”.
+        No saved projects yet. Open the tool, load a photo, and “Save Project”.
       </p>
     )
 
